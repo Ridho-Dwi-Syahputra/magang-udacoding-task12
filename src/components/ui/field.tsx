@@ -1,0 +1,39 @@
+import { AlertCircle } from 'lucide-react'
+
+const DASAR_INPUT = [
+  'w-full rounded-lg border bg-surface px-3 py-2.5',
+  // 16px: di bawah itu iOS otomatis nge-zoom pas field disentuh.
+  'text-base text-ink placeholder:text-stone-400',
+  'focus:outline-2 focus:outline-offset-0 focus:outline-primary',
+].join(' ')
+
+type Props = {
+  label: string
+  htmlFor: string
+  /* Satu baris pesan, satu tempat: bantuan diganti error waktu salah,
+     jadi layout nggak melompat pas error muncul. */
+  bantuan?: string
+  error?: string
+  children: React.ReactNode
+}
+
+export function Field({ label, htmlFor, bantuan, error, children }: Props) {
+  return (
+    <div>
+      <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-semibold text-stone-700">
+        {label}
+      </label>
+      {children}
+      <p
+        className={`mt-1.5 flex items-start gap-1.5 text-sm ${error ? 'text-danger' : 'text-ink-muted'}`}
+      >
+        {error && <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />}
+        <span>{error ?? bantuan ?? '\u00A0'}</span>
+      </p>
+    </div>
+  )
+}
+
+export function kelasInput(adaError?: boolean) {
+  return `${DASAR_INPUT} ${adaError ? 'border-danger' : 'border-stone-300'}`
+}
