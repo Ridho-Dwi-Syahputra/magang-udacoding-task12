@@ -1,4 +1,4 @@
-# Papan Bantuan Warga
+# Community Help Board
 
 Papan pengumuman digital buat warga satu lingkungan. Siapa pun bisa menempel permintaan bantuan (donor darah, sembako, pinjam kursi roda, cari tenaga relawan), dan tetangga yang sanggup tinggal menekan satu tombol untuk mengangkat tangan.
 
@@ -8,8 +8,8 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 
 - Daftar/masuk pakai email & kata sandi, plus opsi masuk dengan Google.
 - Papan bantuan yang bisa disaring per kategori; yang masih menunggu naik ke atas sendiri.
-- Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya.
-- Halaman detail dengan tombol "Saya Ingin Membantu" yang mengubah status jadi selesai.
+- Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya. Lokasinya bisa diketik manual atau dipilih lewat peta (klik/geser pin, cari alamat, atau pakai GPS).
+- Halaman detail dengan tombol "Saya Ingin Membantu" yang mengubah status jadi selesai. Kalau lokasinya dipilih lewat peta, halaman detail nampilin mini-peta dengan pin di titik itu.
 - Halaman "Bantuan Saya": riwayat permintaan sendiri, lengkap dengan hapus (pakai konfirmasi).
 - Responsif: sidebar tetap di kiri pada layar lebar, berubah jadi laci lewat tombol Menu di HP.
 - Skeleton saat memuat, layar kosong ber-ajakan, layar error dengan tombol coba lagi, dan penanda saat koneksi putus.
@@ -21,6 +21,8 @@ Empat kategori: **Medis & Darurat**, **Sembako**, **Peminjaman Alat**, dan **Ten
 Statusnya dua: **Menunggu** dan **Selesai**. Sebuah permintaan pindah ke Selesai begitu ada warga lain yang menekan tombol bantu.
 
 ## Cara menjalankan
+
+Aplikasi ini bisa langsung dicoba tanpa Supabase: kalau `.env.local` belum diisi, semua data (akun, permintaan bantuan) disimpan sementara di memori server, sudah terisi beberapa contoh. Cukup jalankan `npm install && npm run dev` dan langsung dipakai. Bagian di bawah ini untuk nyambungin ke Supabase beneran.
 
 ### 1. Siapkan proyek Supabase
 
@@ -65,10 +67,12 @@ src/
 │   └── error.tsx not-found.tsx  layar error & 404
 ├── components/
 │   ├── ui/                      tombol, field, badge, skeleton
-│   └── features/                kartu, filter, form, tombol aksi
+│   └── features/                kartu, filter, form, tombol aksi, peta
 ├── lib/
 │   ├── actions/                 server action: auth & CRUD bantuan
 │   ├── supabase/                klien server & browser
+│   ├── dummy/                   data awal buat mode tanpa Supabase
+│   ├── repo.ts                  satu pintu akses data (dummy atau Supabase)
 │   └── constants.ts types.ts    kategori, status, bentuk data
 └── proxy.ts                     refresh sesi + penjaga rute privat
 ```
@@ -84,6 +88,10 @@ src/
 **RLS dinyalakan, bukan dimatikan.** Anon key itu publik karena ikut kebundel ke JavaScript browser, jadi kebijakan RLS di `schema.sql` inilah yang sebenarnya menjaga data. `proxy.ts` yang menendang tamu dari halaman privat cuma penjaga UX, bukan keamanan.
 
 **Aksi "Saya Ingin Membantu" lewat fungsi database.** Kebijakan UPDATE tidak bisa mengunci per-kolom, jadi kalau relawan diberi izin UPDATE langsung, dia juga bisa mengubah judul dan isi postingan orang. Aksinya dibungkus fungsi `tandai_selesai` yang cuma menyentuh kolom status. Syaratnya ditaruh di `WHERE`, bukan di `IF` sebelumnya, supaya dua relawan yang menekan tombol bersamaan tidak saling menimpa.
+
+**Peta pakai OpenStreetMap, bukan Google Maps.** Leaflet + ubin OpenStreetMap + pencarian alamat Nominatim, semuanya gratis dan tanpa API key. Koordinat (`latitude`/`longitude`) sifatnya opsional di database -- permintaan yang lokasinya diketik manual nilainya tetap `null`, dan halaman detail cuma nampilin mini-peta kalau koordinatnya ada. Pengambilan alamat dan pencarian lokasi butuh koneksi internet, terlepas dari status koneksi ke Supabase.
+
+**Satu pintu akses data (`lib/repo.ts`).** Halaman dan server action manggil fungsi seperti `daftarBantuan()` atau `simpanBantuan()`, bukan Supabase langsung. Di baliknya, fungsi-fungsi ini nyambung ke Supabase kalau environment variable-nya ada, atau ke data di memori kalau belum -- jadi satu basis kode yang sama bisa didemokan tanpa Supabase maupun jalan penuh dengannya.
 
 ## Deploy ke Vercel
 

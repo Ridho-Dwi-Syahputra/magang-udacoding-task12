@@ -13,8 +13,8 @@ export async function Sidebar() {
         href="/"
         className="mb-6 block rounded-lg px-3 py-2 font-display text-lg leading-tight font-extrabold text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        Papan Bantuan
-        <span className="block text-sm font-semibold text-ink-muted">Warga</span>
+        Community
+        <span className="block text-sm font-semibold text-ink-muted">Help Board</span>
       </Link>
 
       <nav aria-label="Menu utama" className="space-y-1">

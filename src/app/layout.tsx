@@ -12,8 +12,8 @@ const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', displa
 
 export const metadata: Metadata = {
   title: {
-    default: 'Papan Bantuan Warga',
-    template: '%s | Papan Bantuan Warga',
+    default: 'Community Help Board',
+    template: '%s | Community Help Board',
   },
   description:
     'Papan pengumuman warga untuk saling bantu: donor darah, sembako, pinjam alat, sampai cari tenaga relawan.',

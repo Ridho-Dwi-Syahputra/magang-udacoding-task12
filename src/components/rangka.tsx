@@ -26,7 +26,7 @@ export function Rangka({
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-line bg-surface px-4 md:hidden">
         <Link href="/" className="font-display font-extrabold text-primary">
-          Papan Bantuan
+          Community Help Board
         </Link>
         <button
           type="button"
