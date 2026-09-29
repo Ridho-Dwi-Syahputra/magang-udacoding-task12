@@ -28,3 +28,15 @@ export function waktuRelatif(iso: string) {
 export function tanggalLengkap(iso: string) {
   return `${TANGGAL_PANJANG.format(new Date(iso))} WIB`
 }
+
+/** Format date YYYY-MM-DD menjadi "Senin, 5 Oktober 2026" */
+export function formatTanggalDibutuhkan(tanggal: string): string {
+  const fmt = new Intl.DateTimeFormat('id-ID', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Asia/Jakarta',
+  })
+  return fmt.format(new Date(tanggal + 'T00:00:00'))
+}

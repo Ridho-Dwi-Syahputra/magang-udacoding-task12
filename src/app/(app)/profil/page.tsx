@@ -25,12 +25,14 @@ export default async function ProfilPage() {
           </div>
         </section>
 
-        <section className="rounded-card border border-line bg-surface p-5 sm:p-6">
-          <h2 className="font-display text-lg font-bold text-ink">Kata Sandi</h2>
-          <div className="mt-4">
-            <FormGantiSandi />
-          </div>
-        </section>
+        {sesi.provider === 'email' && (
+          <section className="rounded-card border border-line bg-surface p-5 sm:p-6">
+            <h2 className="font-display text-lg font-bold text-ink">Kata Sandi</h2>
+            <div className="mt-4">
+              <FormGantiSandi />
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

@@ -5,6 +5,7 @@ export type IsianBantuan = {
   description: string
   category: string
   location: string
+  dibutuhkan_tanggal: string | null
 }
 
 export type ErrorBantuan = Partial<Record<keyof IsianBantuan, string>>
@@ -32,6 +33,18 @@ export function validasiBantuan(isian: IsianBantuan): ErrorBantuan {
   if (isian.location.length < 3) error.location = 'Tulis lokasinya, minimal 3 huruf.'
   else if (isian.location.length > BATAS_LOKASI) {
     error.location = `Lokasi maksimal ${BATAS_LOKASI} huruf.`
+  }
+
+  // Tanggal opsional, tapi kalau diisi harus valid dan tidak boleh di masa lalu
+  if (isian.dibutuhkan_tanggal) {
+    const tgl = new Date(isian.dibutuhkan_tanggal + 'T00:00:00')
+    const hari_ini = new Date()
+    hari_ini.setHours(0, 0, 0, 0)
+    if (isNaN(tgl.getTime())) {
+      error.dibutuhkan_tanggal = 'Format tanggal tidak valid.'
+    } else if (tgl < hari_ini) {
+      error.dibutuhkan_tanggal = 'Tanggal tidak boleh di masa lalu.'
+    }
   }
 
   return error

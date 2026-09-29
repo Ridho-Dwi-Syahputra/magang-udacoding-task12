@@ -10,6 +10,7 @@ export type BarisDummy = {
   location: string
   latitude: number | null
   longitude: number | null
+  dibutuhkan_tanggal: string | null
   status: Status
   user_id: string
   helper_id: string | null
@@ -41,6 +42,7 @@ function awal(): Isi {
       location: 'RT 03 / RW 05, Kel. Jati, Padang',
       latitude: -0.939,
       longitude: 100.372,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-sari',
       helper_id: null,
@@ -59,6 +61,7 @@ function awal(): Isi {
       longitude: 100.401,
       // Contoh status "diproses": Rina udah nawarin, tinggal nunggu Budi
       // (pemilik postingan) konfirmasi beneran udah dipinjemin apa belum.
+      dibutuhkan_tanggal: null,
       status: 'diproses',
       user_id: 'u-budi',
       helper_id: 'u-rina',
@@ -75,6 +78,7 @@ function awal(): Isi {
       location: 'Pos Ronda RT 02, Kel. Surau Gadang',
       latitude: -0.925,
       longitude: 100.37,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-rina',
       helper_id: null,
@@ -91,6 +95,7 @@ function awal(): Isi {
       location: 'Musala Al-Ikhlas, RW 04, Nanggalo',
       latitude: -0.921,
       longitude: 100.373,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-sari',
       helper_id: null,
@@ -108,6 +113,7 @@ function awal(): Isi {
       // Sengaja null: contoh permintaan yang lokasinya diketik manual, tanpa peta.
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-budi',
       helper_id: null,
@@ -124,6 +130,7 @@ function awal(): Isi {
       location: 'RT 01 / RW 02, Kel. Alai Parak Kopi',
       latitude: -0.92,
       longitude: 100.362,
+      dibutuhkan_tanggal: null,
       status: 'selesai',
       user_id: 'u-sari',
       helper_id: 'u-budi',
@@ -140,6 +147,7 @@ function awal(): Isi {
       location: 'Posyandu Melati, Kel. Lolong Belanti',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'selesai',
       user_id: 'u-rina',
       helper_id: 'u-sari',
@@ -159,6 +167,7 @@ function awal(): Isi {
       location: 'Balai RT 07, Kel. Kuranji',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-budi',
       helper_id: null,
@@ -175,6 +184,7 @@ function awal(): Isi {
       location: 'Masjid Nurul Iman, Kel. Korong Gadang',
       latitude: -0.912,
       longitude: 100.398,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-rina',
       helper_id: null,
@@ -191,6 +201,7 @@ function awal(): Isi {
       location: 'RT 04 / RW 01, Kel. Ulak Karang',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-sari',
       helper_id: null,
@@ -207,6 +218,7 @@ function awal(): Isi {
       location: 'Jl. S. Parman, Kel. Ulak Karang Selatan',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-budi',
       helper_id: null,
@@ -223,6 +235,7 @@ function awal(): Isi {
       location: 'Kantor RW 03, Kel. Ampang',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-rina',
       helper_id: null,
@@ -240,6 +253,7 @@ function awal(): Isi {
       latitude: null,
       longitude: null,
       // Contoh kedua status "diproses" di data dummy, biar nggak cuma satu.
+      dibutuhkan_tanggal: null,
       status: 'diproses',
       user_id: 'u-sari',
       helper_id: 'u-rina',
@@ -256,6 +270,7 @@ function awal(): Isi {
       location: 'SDN 12 Air Tawar, Kel. Air Tawar Barat',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'menunggu',
       user_id: 'u-budi',
       helper_id: null,
@@ -272,6 +287,7 @@ function awal(): Isi {
       location: 'RS Siti Rahmah, Kel. Kalumbuk',
       latitude: null,
       longitude: null,
+      dibutuhkan_tanggal: null,
       status: 'selesai',
       user_id: 'u-rina',
       helper_id: 'u-budi',

@@ -12,7 +12,7 @@ import { supabaseServer } from '@/lib/supabase/server'
 
 const COOKIE_DEMO = 'demo_user'
 
-export type Sesi = { id: string; nama: string }
+export type Sesi = { id: string; nama: string; provider: string }
 
 async function mulaiSesiDemo(id: string) {
   const jar = await cookies()
@@ -23,7 +23,7 @@ export async function sesiSekarang(): Promise<Sesi | null> {
   if (modeDummy()) {
     const id = (await cookies()).get(COOKIE_DEMO)?.value
     const p = dataDummy().pengguna.find((x) => x.id === id)
-    return p ? { id: p.id, nama: p.nama } : null
+    return p ? { id: p.id, nama: p.nama, provider: 'email' } : null
   }
 
   const supabase = await supabaseServer()
@@ -33,7 +33,7 @@ export async function sesiSekarang(): Promise<Sesi | null> {
   if (!user) return null
 
   const { data } = await supabase.from('profiles').select('nama').eq('id', user.id).single()
-  return { id: user.id, nama: data?.nama ?? user.email?.split('@')[0] ?? 'warga' }
+  return { id: user.id, nama: data?.nama ?? user.email?.split('@')[0] ?? 'warga', provider: user.app_metadata?.provider || 'email' }
 }
 
 export async function loginDenganSandi(email: string, password: string): Promise<boolean> {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FormRegister } from '@/components/features/form-register'
 import { TombolGoogle } from '@/components/features/tombol-google'
-import { modeDummy } from '@/lib/env'
+import { modeDummy, googleOAuthAktif } from '@/lib/env'
 
 export const metadata: Metadata = { title: 'Daftar' }
 
@@ -17,7 +17,7 @@ export default function RegisterPage() {
       <div className="rounded-card border border-line bg-surface p-5 sm:p-6">
         <FormRegister />
 
-        {!modeDummy() && (
+        {!modeDummy() && googleOAuthAktif() && (
           <>
             <div className="my-5 flex items-center gap-3 text-xs font-semibold text-ink-muted">
               <span className="h-px flex-1 bg-line" />

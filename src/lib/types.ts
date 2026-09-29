@@ -18,6 +18,8 @@ export type Bantuan = {
   status: Status
   user_id: string
   helper_id: string | null
+  // Kapan bantuan ini dibutuhkan (opsional, diisi pemosting).
+  dibutuhkan_tanggal: string | null
   // Kapan relawan menawarkan diri (status jadi "diproses").
   helped_at: string | null
   // Kapan PEMILIK postingan mengonfirmasi bantuannya beneran kelar. Cuma
@@ -34,4 +36,4 @@ export type BantuanDenganProfil = Bantuan & {
 }
 
 export const KOLOM_BANTUAN =
-  'id, title, description, category, location, latitude, longitude, status, user_id, helper_id, helped_at, confirmed_at, created_at, pemilik:profiles!help_requests_user_id_fkey(id, nama), penolong:profiles!help_requests_helper_id_fkey(id, nama)'
+  'id, title, description, category, location, latitude, longitude, status, user_id, helper_id, dibutuhkan_tanggal, helped_at, confirmed_at, created_at, pemilik:profiles!help_requests_user_id_fkey(id, nama), penolong:profiles!help_requests_helper_id_fkey(id, nama)'

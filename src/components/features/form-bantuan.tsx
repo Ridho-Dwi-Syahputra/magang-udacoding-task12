@@ -17,7 +17,7 @@ export function FormBantuan() {
   const nilai = status?.nilai ?? {}
 
   return (
-    <form action={kirim} className="space-y-1" noValidate>
+    <form action={kirim} className="space-y-5" noValidate>
       {status?.error && (
         <p role="alert" className="mb-4 rounded-lg border border-danger/30 p-3 text-sm text-danger">
           {status.error}
@@ -81,7 +81,7 @@ export function FormBantuan() {
           maxLength={BATAS_DESKRIPSI}
           defaultValue={nilai.description}
           onChange={(e) => setPanjangDeskripsi(e.target.value.length)}
-          placeholder="Kapan dibutuhkan, berapa banyak, dan hal lain yang perlu diketahui calon penolong."
+          placeholder="Berapa banyak, dan detail lain yang perlu diketahui calon penolong."
           aria-invalid={Boolean(field.description)}
           className={`${kelasInput(Boolean(field.description))} resize-y`}
         />
@@ -96,11 +96,28 @@ export function FormBantuan() {
         }}
       />
 
+      <Field
+        label="Dibutuhkan sebelum"
+        htmlFor="dibutuhkan_tanggal"
+        bantuan="Opsional. Biar penolong tahu batas waktunya."
+        error={field.dibutuhkan_tanggal}
+      >
+        <input
+          id="dibutuhkan_tanggal"
+          name="dibutuhkan_tanggal"
+          type="date"
+          defaultValue={nilai.dibutuhkan_tanggal}
+          min={new Date().toISOString().split('T')[0]}
+          aria-invalid={Boolean(field.dibutuhkan_tanggal)}
+          className={kelasInput(Boolean(field.dibutuhkan_tanggal))}
+        />
+      </Field>
+
       <Button
         type="submit"
         memproses={memproses}
         labelProses="Menempel..."
-        className="mt-2 w-full sm:w-auto"
+        className="mt-6 w-full sm:w-auto"
       >
         Tempel di Papan
       </Button>

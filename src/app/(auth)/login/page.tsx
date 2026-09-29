@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FormLogin } from '@/components/features/form-login'
 import { TombolGoogle } from '@/components/features/tombol-google'
-import { modeDummy } from '@/lib/env'
+import { modeDummy, googleOAuthAktif } from '@/lib/env'
 
 export const metadata: Metadata = { title: 'Masuk' }
 
@@ -22,9 +22,7 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
       <div className="rounded-card border border-line bg-surface p-5 sm:p-6">
         <FormLogin lanjut={tujuan} galat={pesanGalat} />
 
-        {/* Google butuh Supabase, jadi di mode dummy nggak ditampilkan
-            daripada muncul tombol yang pasti gagal. */}
-        {!modeDummy() && (
+        {!modeDummy() && googleOAuthAktif() && (
           <>
             <div className="my-5 flex items-center gap-3 text-xs font-semibold text-ink-muted">
               <span className="h-px flex-1 bg-line" />

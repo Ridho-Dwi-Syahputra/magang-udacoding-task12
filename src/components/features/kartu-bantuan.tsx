@@ -1,9 +1,21 @@
 import Link from 'next/link'
 import { BadgeKategori, BadgeStatus } from '@/components/ui/badge'
-import { waktuRelatif } from '@/lib/format'
+import { waktuRelatif, formatTanggalDibutuhkan } from '@/lib/format'
 import type { BantuanDenganProfil } from '@/lib/types'
 
 export function KartuBantuan({ bantuan }: { bantuan: BantuanDenganProfil }) {
+  // Hitung apakah tanggal deadline sudah dekat (≤ 2 hari) atau sudah lewat
+  const deadlineInfo = (() => {
+    if (!bantuan.dibutuhkan_tanggal) return null
+    const tgl = new Date(bantuan.dibutuhkan_tanggal + 'T00:00:00')
+    const hari_ini = new Date()
+    hari_ini.setHours(0, 0, 0, 0)
+    const selisihHari = Math.ceil((tgl.getTime() - hari_ini.getTime()) / (1000 * 60 * 60 * 24))
+    if (selisihHari < 0) return { label: formatTanggalDibutuhkan(bantuan.dibutuhkan_tanggal), urgen: 'lewat' as const }
+    if (selisihHari <= 2) return { label: formatTanggalDibutuhkan(bantuan.dibutuhkan_tanggal), urgen: 'segera' as const }
+    return { label: formatTanggalDibutuhkan(bantuan.dibutuhkan_tanggal), urgen: 'normal' as const }
+  })()
+
   return (
     <article className="group relative flex w-full flex-col rounded-card border border-line bg-surface p-5 transition-colors hover:border-primary/50">
       <div className="flex items-center justify-between gap-3">
@@ -24,7 +36,21 @@ export function KartuBantuan({ bantuan }: { bantuan: BantuanDenganProfil }) {
         {bantuan.description}
       </p>
 
-      <p className="mt-4 mb-4 line-clamp-1 text-sm text-ink">{bantuan.location}</p>
+      <p className="mt-4 mb-2 line-clamp-1 text-sm text-ink">{bantuan.location}</p>
+
+      {deadlineInfo && (
+        <p className={`mb-2 text-xs font-medium ${
+          deadlineInfo.urgen === 'lewat'
+            ? 'text-danger'
+            : deadlineInfo.urgen === 'segera'
+              ? 'text-orange-500'
+              : 'text-ink-muted'
+        }`}>
+          ⏰ Dibutuhkan: {deadlineInfo.label}
+          {deadlineInfo.urgen === 'segera' && ' · Segera!'}
+          {deadlineInfo.urgen === 'lewat' && ' · Sudah lewat'}
+        </p>
+      )}
 
       <p className="mt-auto border-t border-line pt-3 text-xs text-ink-muted">
         {bantuan.pemilik?.nama ?? 'Warga'} &middot;{' '}

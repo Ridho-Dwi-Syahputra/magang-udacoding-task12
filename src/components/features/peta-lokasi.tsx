@@ -20,6 +20,12 @@ export function PetaLokasi({ lat, lng }: { lat: number; lng: number }) {
     import('leaflet').then((L) => {
       if (batal) return
 
+      // Bersihkan sisa internal Leaflet kalau komponen kena double-mount
+      const el = kontainer as any
+      if (el._leaflet_id) {
+        el._leaflet_id = null
+      }
+
       peta = L.map(kontainer, {
         zoomControl: false,
         dragging: false,

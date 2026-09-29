@@ -24,3 +24,12 @@ export function envSupabase() {
 export function modeDummy() {
   return !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 }
+
+/*
+  Google OAuth butuh Client ID dari Google Cloud Console.
+  Set NEXT_PUBLIC_GOOGLE_OAUTH=true di .env.local kalau sudah dikonfigurasi.
+  Default: false (tombol Google disembunyikan).
+*/
+export function googleOAuthAktif() {
+  return process.env.NEXT_PUBLIC_GOOGLE_OAUTH === 'true'
+}

@@ -165,6 +165,7 @@ type Isian = {
   location: string
   latitude: number | null
   longitude: number | null
+  dibutuhkan_tanggal: string | null
 }
 
 export async function simpanBantuan(userId: string, isian: Isian): Promise<string | null> {

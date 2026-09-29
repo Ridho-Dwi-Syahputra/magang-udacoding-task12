@@ -39,6 +39,12 @@ export function PetaPilih({ onPilih }: { onPilih: (hasil: HasilLokasi) => void }
     import('leaflet').then((L) => {
       if (batal || petaRef.current) return
 
+      // Bersihkan sisa internal Leaflet kalau komponen kena double-mount di Strict Mode
+      const el = kontainer as any
+      if (el._leaflet_id) {
+        el._leaflet_id = null
+      }
+
       const peta = L.map(kontainer).setView([LAT_AWAL, LNG_AWAL], 13)
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',

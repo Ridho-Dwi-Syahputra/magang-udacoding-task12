@@ -34,6 +34,7 @@ export async function buatBantuan(
   const description = String(formData.get('description') ?? '').trim()
   const category = String(formData.get('category') ?? '')
   const location = String(formData.get('location') ?? '').trim()
+  const dibutuhkan_tanggal = String(formData.get('dibutuhkan_tanggal') ?? '').trim() || null
   const { latitude, longitude } = bacaKoordinat(
     String(formData.get('latitude') ?? ''),
     String(formData.get('longitude') ?? ''),
@@ -45,11 +46,12 @@ export async function buatBantuan(
     description,
     category,
     location,
+    dibutuhkan_tanggal: dibutuhkan_tanggal ?? '',
     latitude: latitude !== null ? String(latitude) : '',
     longitude: longitude !== null ? String(longitude) : '',
   }
 
-  const field = validasiBantuan({ title, description, category, location })
+  const field = validasiBantuan({ title, description, category, location, dibutuhkan_tanggal })
   if (Object.keys(field).length > 0) return { field, nilai }
 
   const sesi = await sesiSekarang()
@@ -58,14 +60,11 @@ export async function buatBantuan(
   const id = await simpanBantuan(sesi.id, {
     title,
     description,
-    // validasiBantuan() di atas udah mastiin category ini salah satu Kategori
-    // yang sah (kalau enggak, field.category bakal keisi dan udah return duluan).
-    // TypeScript nggak bisa nurunin itu dari objek error yang balik dari fungsi
-    // lain, jadi di-assert manual di sini.
     category: category as Kategori,
     location,
     latitude,
     longitude,
+    dibutuhkan_tanggal,
   })
   if (!id) return { error: 'Permintaan gagal dikirim. Coba lagi sebentar lagi.', nilai }
 
