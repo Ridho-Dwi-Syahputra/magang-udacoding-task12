@@ -132,7 +132,14 @@ export async function ringkasan() {
 
 // ---------------------------------------------------------------- tulis
 
-type Isian = { title: string; description: string; category: Kategori; location: string }
+type Isian = {
+  title: string
+  description: string
+  category: Kategori
+  location: string
+  latitude: number | null
+  longitude: number | null
+}
 
 export async function simpanBantuan(userId: string, isian: Isian): Promise<string | null> {
   if (modeDummy()) {

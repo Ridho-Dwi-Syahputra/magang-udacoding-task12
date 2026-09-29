@@ -8,6 +8,8 @@ export type BarisDummy = {
   description: string
   category: Kategori
   location: string
+  latitude: number | null
+  longitude: number | null
   status: Status
   user_id: string
   helper_id: string | null
@@ -36,6 +38,8 @@ function awal(): Isi {
         'Ibu saya dijadwalkan operasi hari Rabu pagi di RSUP M. Djamil dan stok darah O+ di PMI sedang kosong. Butuh 2 kantong.\n\nBiaya transport pendonor kami ganti. Hubungi lewat ketua RT.',
       category: 'medis',
       location: 'RT 03 / RW 05, Kel. Jati, Padang',
+      latitude: -0.939,
+      longitude: 100.372,
       status: 'menunggu',
       user_id: 'u-sari',
       helper_id: null,
@@ -49,6 +53,8 @@ function awal(): Isi {
         'Bapak baru jatuh di kamar mandi dan belum bisa jalan jauh. Kalau ada warga yang punya kursi roda nganggur, boleh dipinjam sekitar seminggu. Dijemput sendiri.',
       category: 'alat',
       location: 'Komplek Griya Insani Blok C, Kuranji',
+      latitude: -0.901,
+      longitude: 100.401,
       status: 'menunggu',
       user_id: 'u-budi',
       helper_id: null,
@@ -62,6 +68,8 @@ function awal(): Isi {
         'Pak Yanto baru kena PHK dan punya tiga anak yang masih sekolah. Warga yang mau nyumbang beras, minyak, atau telur bisa titip ke pos ronda RT 02.',
       category: 'sembako',
       location: 'Pos Ronda RT 02, Kel. Surau Gadang',
+      latitude: -0.925,
+      longitude: 100.37,
       status: 'menunggu',
       user_id: 'u-rina',
       helper_id: null,
@@ -75,6 +83,8 @@ function awal(): Isi {
         'Drainase depan musala mampet dan tiap hujan air masuk ke rumah warga. Rencana kerja bakti Minggu pagi jam 7. Alat disediakan, konsumsi ditanggung RT.',
       category: 'relawan',
       location: 'Musala Al-Ikhlas, RW 04, Nanggalo',
+      latitude: -0.921,
+      longitude: 100.373,
       status: 'menunggu',
       user_id: 'u-sari',
       helper_id: null,
@@ -88,6 +98,9 @@ function awal(): Isi {
         'Butuh 1 tenda ukuran 4x6 dan sekitar 30 kursi plastik untuk pengajian 40 hari, Sabtu malam. Dibongkar pasang sendiri.',
       category: 'alat',
       location: 'Jl. Gajah Mada No. 21, Padang Utara',
+      // Sengaja null: contoh permintaan yang lokasinya diketik manual, tanpa peta.
+      latitude: null,
+      longitude: null,
       status: 'menunggu',
       user_id: 'u-budi',
       helper_id: null,
@@ -101,6 +114,8 @@ function awal(): Isi {
         'Kakek sesak napas sejak semalam dan belum dapat rujukan rumah sakit. Sudah dibantu warga sebelah, terima kasih banyak.',
       category: 'medis',
       location: 'RT 01 / RW 02, Kel. Alai Parak Kopi',
+      latitude: -0.92,
+      longitude: 100.362,
       status: 'selesai',
       user_id: 'u-sari',
       helper_id: 'u-budi',
@@ -114,6 +129,8 @@ function awal(): Isi {
         'Posyandu Melati kekurangan stok beras untuk PMT balita bulan ini. Berapa pun sangat membantu. Sudah terpenuhi berkat warga RT 05.',
       category: 'sembako',
       location: 'Posyandu Melati, Kel. Lolong Belanti',
+      latitude: null,
+      longitude: null,
       status: 'selesai',
       user_id: 'u-rina',
       helper_id: 'u-sari',

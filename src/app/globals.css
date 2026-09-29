@@ -46,3 +46,21 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+  Leaflet (peta lokasi) bawa warna birunya sendiri buat tombol zoom dan kotak
+  atribusi. Atribusinya wajib tetap ada (syarat pakai ubin OpenStreetMap),
+  tapi dikecilin dan dinetralin biar nggak jadi satu-satunya elemen biru
+  di halaman coklat ini.
+*/
+.leaflet-control-attribution {
+  background: var(--color-surface) !important;
+  color: var(--color-ink-muted) !important;
+  font-size: 0.6875rem !important;
+}
+.leaflet-control-attribution a {
+  color: var(--color-ink-muted) !important;
+}
+.leaflet-control-zoom a {
+  color: var(--color-ink) !important;
+}

@@ -11,6 +11,10 @@ export type Bantuan = {
   description: string
   category: Kategori
   location: string
+  // Opsional: cuma keisi kalau pemosting milih lokasi lewat peta.
+  // Permintaan lama (dibuat sebelum fitur peta ada) nilainya null.
+  latitude: number | null
+  longitude: number | null
   status: Status
   user_id: string
   helper_id: string | null
@@ -26,4 +30,4 @@ export type BantuanDenganProfil = Bantuan & {
 }
 
 export const KOLOM_BANTUAN =
-  'id, title, description, category, location, status, user_id, helper_id, helped_at, created_at, pemilik:profiles!help_requests_user_id_fkey(id, nama), penolong:profiles!help_requests_helper_id_fkey(id, nama)'
+  'id, title, description, category, location, latitude, longitude, status, user_id, helper_id, helped_at, created_at, pemilik:profiles!help_requests_user_id_fkey(id, nama), penolong:profiles!help_requests_helper_id_fkey(id, nama)'

@@ -1,4 +1,4 @@
--- Papan Bantuan Warga - skema database
+-- Community Help Board - skema database
 -- Jalanin sekali di Supabase Dashboard > SQL Editor > New query > Run.
 -- Aman diulang: semua pakai "if not exists" / "drop policy if exists".
 
@@ -56,6 +56,10 @@ create table if not exists public.help_requests (
   description text not null check (char_length(trim(description)) between 10 and 1000),
   category    text not null check (category in ('medis', 'sembako', 'alat', 'relawan')),
   location    text not null check (char_length(trim(location)) between 3 and 120),
+  -- Opsional: cuma keisi kalau pemosting milih lokasi lewat peta di form.
+  -- Permintaan yang lokasinya diketik manual nilainya tetap null, dan itu sah.
+  latitude    double precision,
+  longitude   double precision,
   status      text not null default 'menunggu' check (status in ('menunggu', 'selesai')),
   user_id     uuid not null references public.profiles(id) on delete cascade,
   helper_id   uuid references public.profiles(id) on delete set null,
@@ -68,7 +72,14 @@ create table if not exists public.help_requests (
     (status = 'menunggu' and helper_id is null and helped_at is null)
     or (status = 'selesai' and helper_id is not null and helped_at is not null)
   ),
-  constraint tidak_bantu_diri_sendiri check (helper_id is null or helper_id <> user_id)
+  constraint tidak_bantu_diri_sendiri check (helper_id is null or helper_id <> user_id),
+
+  -- Kedua kolom harus sama-sama kosong atau sama-sama keisi, dan kalau keisi
+  -- harus koordinat yang valid secara geografis.
+  constraint koordinat_sejalan check (
+    (latitude is null and longitude is null)
+    or (latitude between -90 and 90 and longitude between -180 and 180)
+  )
 );
 
 -- Feed selalu difilter status/kategori lalu diurut terbaru, jadi kolom itu

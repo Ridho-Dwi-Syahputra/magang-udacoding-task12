@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { BadgeKategori, BadgeStatus } from '@/components/ui/badge'
 import { gayaTombol } from '@/components/ui/button'
+import { PetaLokasi } from '@/components/features/peta-lokasi'
 import { TombolBantu } from '@/components/features/tombol-bantu'
 import { TombolHapus } from '@/components/features/tombol-hapus'
 import { tanggalLengkap, waktuRelatif } from '@/lib/format'
@@ -69,6 +70,12 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
               </div>
             )}
           </dl>
+
+          {bantuan.latitude !== null && bantuan.longitude !== null && (
+            <div className="mt-3">
+              <PetaLokasi lat={bantuan.latitude} lng={bantuan.longitude} />
+            </div>
+          )}
         </div>
 
         <div className="border-t border-line p-5 sm:p-6">

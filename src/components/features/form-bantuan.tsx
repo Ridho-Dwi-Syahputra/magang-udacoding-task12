@@ -3,14 +3,9 @@
 import { useActionState, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, kelasInput } from '@/components/ui/field'
+import { LokasiField } from '@/components/features/lokasi-field'
 import { buatBantuan, type StatusBantuan } from '@/lib/actions/bantuan'
-import {
-  BATAS_DESKRIPSI,
-  BATAS_JUDUL,
-  BATAS_LOKASI,
-  KATEGORI,
-  LABEL_KATEGORI,
-} from '@/lib/constants'
+import { BATAS_DESKRIPSI, BATAS_JUDUL, KATEGORI, LABEL_KATEGORI } from '@/lib/constants'
 
 const AWAL: StatusBantuan = null
 
@@ -92,24 +87,14 @@ export function FormBantuan() {
         />
       </Field>
 
-      <Field
-        label="Lokasi"
-        htmlFor="location"
-        bantuan="RT/RW, kelurahan, atau patokan yang gampang dicari."
+      <LokasiField
         error={field.location}
-      >
-        <input
-          id="location"
-          name="location"
-          type="text"
-          required
-          maxLength={BATAS_LOKASI}
-          defaultValue={nilai.location}
-          placeholder="Contoh: RT 03 / RW 05, Kel. Jati, Padang"
-          aria-invalid={Boolean(field.location)}
-          className={kelasInput(Boolean(field.location))}
-        />
-      </Field>
+        awal={{
+          location: nilai.location ?? '',
+          latitude: nilai.latitude ?? '',
+          longitude: nilai.longitude ?? '',
+        }}
+      />
 
       <Button
         type="submit"

@@ -11,6 +11,23 @@ export type StatusBantuan = {
   nilai?: Record<string, string>
 } | null
 
+/* Titik dari peta cuma pemanis lokasi, bukan data wajib. Kalau salah satu
+   angkanya rusak atau di luar rentang koordinat yang valid, keduanya
+   dianggap kosong saja daripada nge-block pengiriman gara-gara ini. */
+function bacaKoordinat(formData: FormData): { latitude: number | null; longitude: number | null } {
+  const latStr = String(formData.get('latitude') ?? '').trim()
+  const lngStr = String(formData.get('longitude') ?? '').trim()
+  // Dicek kosong dulu: Number('') hasilnya 0, bukan NaN, jadi tanpa ini
+  // lokasi manual (tanpa pin) malah kesimpen sebagai koordinat 0,0.
+  if (!latStr || !lngStr) return { latitude: null, longitude: null }
+
+  const lat = Number(latStr)
+  const lng = Number(lngStr)
+  const valid =
+    Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
+  return valid ? { latitude: lat, longitude: lng } : { latitude: null, longitude: null }
+}
+
 export async function buatBantuan(
   _sebelumnya: StatusBantuan,
   formData: FormData,
@@ -19,9 +36,17 @@ export async function buatBantuan(
   const description = String(formData.get('description') ?? '').trim()
   const category = String(formData.get('category') ?? '')
   const location = String(formData.get('location') ?? '').trim()
+  const { latitude, longitude } = bacaKoordinat(formData)
 
   // Dikembalikan ke form kalau ada yang salah, biar ketikan user nggak hangus.
-  const nilai = { title, description, category, location }
+  const nilai = {
+    title,
+    description,
+    category,
+    location,
+    latitude: latitude !== null ? String(latitude) : '',
+    longitude: longitude !== null ? String(longitude) : '',
+  }
 
   const field: Record<string, string> = {}
   if (title.length < 5) field.title = 'Judul minimal 5 huruf.'
@@ -41,7 +66,7 @@ export async function buatBantuan(
   const sesi = await sesiSekarang()
   if (!sesi) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.', nilai }
 
-  const id = await simpanBantuan(sesi.id, { title, description, category, location })
+  const id = await simpanBantuan(sesi.id, { title, description, category, location, latitude, longitude })
   if (!id) return { error: 'Permintaan gagal dikirim. Coba lagi sebentar lagi.', nilai }
 
   revalidatePath('/bantuan')
