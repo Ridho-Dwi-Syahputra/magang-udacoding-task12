@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, kelasInput } from '@/components/ui/field'
+import { InputSandi } from '@/components/ui/input-sandi'
 import { register, type StatusForm } from '@/lib/actions/auth'
 
 const AWAL: StatusForm = null
@@ -51,15 +52,7 @@ export function FormRegister() {
       </Field>
 
       <Field label="Kata sandi" htmlFor="password" bantuan="Minimal 8 karakter.">
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className={kelasInput()}
-        />
+        <InputSandi id="password" name="password" autoComplete="new-password" minLength={8} />
       </Field>
 
       <Button type="submit" memproses={memproses} labelProses="Mendaftar..." className="mt-2 w-full">

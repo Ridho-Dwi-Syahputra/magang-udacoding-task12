@@ -7,7 +7,7 @@ import { usePathname } from 'next/navigation'
    teks polos buat header horizontal, bukan pil dengan latar. */
 export function NavLinkAtas({ href, children }: { href: string; children: React.ReactNode }) {
   const path = usePathname()
-  const aktif = href === '/' ? path === '/' : path.startsWith(href)
+  const aktif = path === href || path.startsWith(`${href}/`)
 
   return (
     <Link

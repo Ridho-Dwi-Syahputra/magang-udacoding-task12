@@ -5,7 +5,10 @@ import { usePathname } from 'next/navigation'
 
 export function MenuLink({ href, children }: { href: string; children: React.ReactNode }) {
   const path = usePathname()
-  const aktif = href === '/' ? path === '/' : path.startsWith(href)
+  // Bukan path.startsWith(href) doang -- "/bantuan-saya" juga "mulai dengan"
+  // "/bantuan" secara string, padahal itu halaman lain. Harus pas sama persis
+  // atau diikuti "/" (batas segmen), baru dianggap aktif.
+  const aktif = path === href || path.startsWith(`${href}/`)
 
   return (
     <Link

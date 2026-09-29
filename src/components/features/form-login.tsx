@@ -3,6 +3,7 @@
 import { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Field, kelasInput } from '@/components/ui/field'
+import { InputSandi } from '@/components/ui/input-sandi'
 import { login, type StatusForm } from '@/lib/actions/auth'
 
 const AWAL: StatusForm = null
@@ -35,14 +36,7 @@ export function FormLogin({ lanjut, galat }: { lanjut: string; galat?: string })
       </Field>
 
       <Field label="Kata sandi" htmlFor="password">
-        <input
-          id="password"
-          name="password"
-          type="password"
-          required
-          autoComplete="current-password"
-          className={kelasInput()}
-        />
+        <InputSandi id="password" name="password" autoComplete="current-password" />
       </Field>
 
       <Button type="submit" memproses={memproses} labelProses="Masuk..." className="mt-2 w-full">
