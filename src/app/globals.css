@@ -4,11 +4,18 @@
   Satu warna: coklat. Sisanya netral hangat (kertas, garis, teks), jadi
   tampilannya tenang dan nggak ada yang rebutan perhatian.
   Komponen cuma nyebut peran warna, ganti palet cukup di file ini.
+
+  --color-on-primary itu pasangan kontras buat teks di atas latar --color-primary
+  (misalnya teks tombol). Dipisah dari --color-primary sendiri karena di dark
+  mode coklatnya jadi lebih terang (biar kebaca di latar gelap) -- kalau teks
+  tombolnya masih dipaksa putih, tombolnya jadi putih di atas coklat muda:
+  nyaris nggak kebaca.
 */
 @theme {
   --color-primary: #6b4a34;
   --color-primary-hover: #553a29;
   --color-primary-soft: #f3ece5;
+  --color-on-primary: #ffffff;
 
   --color-bg: #faf8f5;
   --color-surface: #ffffff;
@@ -23,6 +30,44 @@
   --font-sans: var(--font-inter), system-ui, sans-serif;
 
   --radius-card: 0.625rem;
+}
+
+/*
+  Dark mode: token yang sama, nilai lain. Dua jalur nyalain dark mode --
+  ngikut pengaturan sistem (media query), atau dipilih manual lewat tombol
+  tema (atribut data-theme, ditulis TemaToggle ke <html> dan disimpen di
+  localStorage). Yang manual menang: :not([data-theme="light"]) bikin sistem
+  kalah kalau user eksplisit milih terang walau OS-nya gelap.
+*/
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-primary: #c99a6c;
+    --color-primary-hover: #d9ad82;
+    --color-primary-soft: #3a2c20;
+    --color-on-primary: #241a12;
+
+    --color-bg: #1c1512;
+    --color-surface: #251d19;
+    --color-line: #3d322b;
+    --color-ink: #f1e9e2;
+    --color-ink-muted: #b2a294;
+
+    --color-danger: #e2896a;
+  }
+}
+:root[data-theme="dark"] {
+  --color-primary: #c99a6c;
+  --color-primary-hover: #d9ad82;
+  --color-primary-soft: #3a2c20;
+  --color-on-primary: #241a12;
+
+  --color-bg: #1c1512;
+  --color-surface: #251d19;
+  --color-line: #3d322b;
+  --color-ink: #f1e9e2;
+  --color-ink-muted: #b2a294;
+
+  --color-danger: #e2896a;
 }
 
 body {
@@ -63,4 +108,16 @@ body {
 }
 .leaflet-control-zoom a {
   color: var(--color-ink) !important;
+}
+
+/* Ubin peta (foto satelit/peta OSM) warnanya tetap terang apa pun temanya --
+   itu gambar raster, bukan CSS. Dibalik warnanya di dark mode biar nggak
+   jadi kotak putih menyilaukan di tengah halaman gelap. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
+  }
+}
+:root[data-theme="dark"] .leaflet-tile-pane {
+  filter: invert(1) hue-rotate(180deg) brightness(0.95) contrast(0.9);
 }

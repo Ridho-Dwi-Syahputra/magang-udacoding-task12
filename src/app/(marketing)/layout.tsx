@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { gayaTombol } from '@/components/ui/button'
+import { TemaToggle } from '@/components/tema-toggle'
 import { logout } from '@/lib/actions/auth'
 import { sesiSekarang } from '@/lib/repo'
 
@@ -22,6 +23,7 @@ export default async function MarketingLayout({ children }: { children: React.Re
         </Link>
 
         <div className="flex items-center gap-2">
+          <TemaToggle />
           {sesi ? (
             <>
               <Link href="/bantuan" className={gayaTombol('primary', 'sm')}>

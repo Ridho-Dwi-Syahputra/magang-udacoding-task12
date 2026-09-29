@@ -11,7 +11,7 @@ export function FilterKategori({ aktif }: { aktif: Kategori | null }) {
   const kelas = (dipilih: boolean) =>
     `${dasar} ${
       dipilih
-        ? 'border-primary bg-primary text-white'
+        ? 'border-primary bg-primary text-on-primary'
         : 'border-line bg-surface text-ink-muted hover:bg-primary-soft'
     }`
 

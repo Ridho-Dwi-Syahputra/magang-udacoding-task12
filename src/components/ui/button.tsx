@@ -4,7 +4,7 @@ type Varian = 'primary' | 'secondary' | 'ghost' | 'danger'
 type Ukuran = 'md' | 'sm'
 
 const VARIAN: Record<Varian, string> = {
-  primary: 'bg-primary text-white hover:bg-primary-hover focus-visible:outline-primary',
+  primary: 'bg-primary text-on-primary hover:bg-primary-hover focus-visible:outline-primary',
   secondary:
     'bg-surface text-ink border border-line hover:bg-primary-soft focus-visible:outline-primary',
   ghost: 'text-primary hover:bg-primary-soft focus-visible:outline-primary',

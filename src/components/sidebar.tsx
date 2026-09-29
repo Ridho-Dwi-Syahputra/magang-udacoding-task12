@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { gayaTombol } from '@/components/ui/button'
 import { MenuLink } from '@/components/menu-link'
+import { TemaToggle } from '@/components/tema-toggle'
 import { logout } from '@/lib/actions/auth'
 import { sesiSekarang } from '@/lib/repo'
 
@@ -24,6 +25,8 @@ export async function Sidebar() {
       </nav>
 
       <div className="mt-auto border-t border-line pt-4">
+        <TemaToggle className="mb-3 w-full" />
+
         {sesi ? (
           <>
             <p className="truncate px-3 text-sm text-ink-muted">Masuk sebagai</p>

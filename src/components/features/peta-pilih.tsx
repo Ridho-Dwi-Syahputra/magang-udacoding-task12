@@ -49,7 +49,7 @@ export function PetaPilih({ onPilih }: { onPilih: (hasil: HasilLokasi) => void }
       // sisa halaman yang sengaja nggak pakai ikon dekoratif.
       const ikon = L.divIcon({
         className: '',
-        html: '<span style="display:block;width:16px;height:16px;border-radius:9999px;background:#6b4a34;border:3px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.25)"></span>',
+        html: '<span style="display:block;width:16px;height:16px;border-radius:9999px;background:var(--color-primary);border:3px solid var(--color-surface);box-shadow:0 0 0 1px rgba(0,0,0,.25)"></span>',
         iconSize: [16, 16],
         iconAnchor: [8, 8],
       })

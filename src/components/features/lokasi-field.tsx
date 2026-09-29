@@ -37,7 +37,7 @@ export function LokasiField({ error, awal }: Props) {
   const kelasToggle = (aktif: boolean) =>
     `${dasarToggle} ${
       aktif
-        ? 'border-primary bg-primary text-white'
+        ? 'border-primary bg-primary text-on-primary'
         : 'border-line bg-surface text-ink-muted hover:bg-primary-soft'
     }`
 
