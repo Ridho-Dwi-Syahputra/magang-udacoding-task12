@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 import { modeDummy } from '@/lib/env'
 
-const RUTE_PRIVAT = ['/minta-bantuan', '/bantuan-saya']
+const RUTE_PRIVAT = ['/minta-bantuan', '/bantuan-saya', '/profil']
 const COOKIE_DEMO = 'demo_user'
 
 /*

@@ -21,13 +21,19 @@ export async function Sidebar() {
         <MenuLink href="/bantuan">Papan Bantuan</MenuLink>
         <MenuLink href="/minta-bantuan">Minta Bantuan</MenuLink>
         <MenuLink href="/bantuan-saya">Bantuan Saya</MenuLink>
+        {sesi && <MenuLink href="/profil">Profil Saya</MenuLink>}
       </nav>
 
       <div className="mt-auto border-t border-line pt-4">
         {sesi ? (
           <>
             <p className="truncate px-3 text-sm text-ink-muted">Masuk sebagai</p>
-            <p className="mb-3 truncate px-3 font-semibold text-ink">{sesi.nama}</p>
+            <Link
+              href="/profil"
+              className="mb-3 block truncate px-3 font-semibold text-ink hover:text-primary"
+            >
+              {sesi.nama}
+            </Link>
             <form action={logout}>
               <button type="submit" className={`${gayaTombol('secondary', 'sm')} w-full`}>
                 Keluar

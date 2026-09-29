@@ -20,6 +20,24 @@ export function validasiRegister({ nama, email, password }: IsianRegister): stri
   return null
 }
 
+export type IsianProfil = { nama: string }
+
+export function validasiProfil({ nama }: IsianProfil): string | null {
+  if (nama.length < 3) return 'Nama minimal 3 huruf.'
+  if (nama.length > 60) return 'Nama maksimal 60 huruf.'
+  return null
+}
+
+export type IsianGantiSandi = { sandiSaatIni: string; sandiBaru: string }
+
+export function validasiGantiSandi({ sandiSaatIni, sandiBaru }: IsianGantiSandi): string | null {
+  if (!sandiSaatIni) return 'Masukkan kata sandi kamu saat ini.'
+  if (sandiBaru.length < PANJANG_PASSWORD_MIN) {
+    return `Kata sandi baru minimal ${PANJANG_PASSWORD_MIN} karakter.`
+  }
+  return null
+}
+
 /* Cuma path relatif yang diterima, biar nggak bisa dipakai buat mental ke
    domain lain lewat ?lanjut=https://... */
 export function tujuanAman(nilai: string | null): string {

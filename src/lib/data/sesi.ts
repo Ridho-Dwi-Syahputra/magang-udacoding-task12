@@ -88,6 +88,50 @@ export async function daftarAkun(nama: string, email: string, password: string):
   return data.session ? { status: 'masuk' } : { status: 'perlu_konfirmasi' }
 }
 
+export async function gantiNama(userId: string, nama: string): Promise<boolean> {
+  if (modeDummy()) {
+    const p = dataDummy().pengguna.find((x) => x.id === userId)
+    if (!p) return false
+    p.nama = nama
+    return true
+  }
+
+  const supabase = await supabaseServer()
+  const { error } = await supabase.from('profiles').update({ nama }).eq('id', userId)
+  return !error
+}
+
+export type HasilGantiSandi = { berhasil: true } | { berhasil: false; pesan: string }
+
+export async function gantiSandi(
+  userId: string,
+  sandiSaatIni: string,
+  sandiBaru: string,
+): Promise<HasilGantiSandi> {
+  if (modeDummy()) {
+    const p = dataDummy().pengguna.find((x) => x.id === userId)
+    if (!p) return { berhasil: false, pesan: 'Sesi tidak valid.' }
+    if (p.password !== sandiSaatIni) return { berhasil: false, pesan: 'Kata sandi saat ini salah.' }
+    p.password = sandiBaru
+    return { berhasil: true }
+  }
+
+  const supabase = await supabaseServer()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user?.email) return { berhasil: false, pesan: 'Sesi tidak valid.' }
+
+  // Verifikasi sandi lama dulu sebelum ganti -- signInWithPassword yang gagal
+  // berarti sandinya salah, tanpa perlu implementasi cek password sendiri.
+  const cekLama = await supabase.auth.signInWithPassword({ email: user.email, password: sandiSaatIni })
+  if (cekLama.error) return { berhasil: false, pesan: 'Kata sandi saat ini salah.' }
+
+  const { error } = await supabase.auth.updateUser({ password: sandiBaru })
+  if (error) return { berhasil: false, pesan: 'Gagal mengganti kata sandi. Coba lagi sebentar lagi.' }
+  return { berhasil: true }
+}
+
 export async function keluar(): Promise<void> {
   if (modeDummy()) {
     const jar = await cookies()

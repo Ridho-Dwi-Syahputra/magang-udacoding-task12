@@ -10,8 +10,10 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 - Daftar/masuk pakai email & kata sandi, plus opsi masuk dengan Google.
 - Papan bantuan yang bisa disaring per kategori; yang masih menunggu naik ke atas sendiri.
 - Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya. Lokasinya bisa diketik manual atau dipilih lewat peta (klik/geser pin, cari alamat, atau pakai GPS).
-- Halaman detail dengan tombol "Saya Ingin Membantu" yang mengubah status jadi selesai. Kalau lokasinya dipilih lewat peta, halaman detail nampilin mini-peta dengan pin di titik itu.
-- Halaman "Bantuan Saya": riwayat permintaan sendiri, lengkap dengan hapus (pakai konfirmasi).
+- Alur bantuan tiga tahap: **Menunggu** &rarr; relawan menawarkan diri jadi **Diproses** &rarr; pemilik postingan mengonfirmasi jadi **Selesai** (atau membatalkan tawaran kalau relawannya nggak kunjung ngerjain, dibuka lagi jadi Menunggu). Bukan langsung "selesai" begitu ada yang klik -- pemilik postingan yang berhak mastiin.
+- Halaman "Bantuan Saya": riwayat permintaan sendiri, lengkap dengan siapa yang menawarkan/membantu, tombol konfirmasi/batal, dan hapus (pakai konfirmasi, cuma buat yang masih menunggu).
+- Halaman "Profil Saya": ubah nama tampilan dan ganti kata sandi (minta kata sandi lama dulu buat verifikasi).
+- Kata sandi bisa ditampilkan/disembunyikan lewat ikon mata di field-nya.
 - Responsif: sidebar tetap di kiri pada layar lebar, berubah jadi laci lewat tombol Menu di HP.
 - Skeleton saat memuat, layar kosong ber-ajakan, layar error dengan tombol coba lagi, dan penanda saat koneksi putus.
 
@@ -19,7 +21,7 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 
 Empat kategori: **Medis & Darurat**, **Sembako**, **Peminjaman Alat**, dan **Tenaga Relawan**. Tampilannya sengaja satu warna (coklat) dengan netral hangat, dan kategori dibedakan lewat tulisan, bukan warna.
 
-Statusnya dua: **Menunggu** dan **Selesai**. Sebuah permintaan pindah ke Selesai begitu ada warga lain yang menekan tombol bantu.
+Statusnya tiga: **Menunggu** &rarr; **Diproses** (ada relawan yang menawarkan diri) &rarr; **Selesai** (pemilik postingan sudah mengonfirmasi). Pemilik juga bisa membatalkan tawaran yang lagi diproses, baliknya ke Menunggu lagi.
 
 ## Cara menjalankan
 
@@ -29,7 +31,7 @@ Aplikasi ini bisa langsung dicoba tanpa Supabase: kalau `.env.local` belum diisi
 
 Bikin proyek baru di [supabase.com](https://supabase.com), lalu:
 
-1. Buka **SQL Editor > New query**, tempel isi [`supabase/schema.sql`](supabase/schema.sql), jalankan. Ini membuat tabel `profiles` dan `help_requests`, indeks, trigger pembuat profil, kebijakan RLS, dan fungsi `tandai_selesai`.
+1. Buka **SQL Editor > New query**, tempel isi [`supabase/schema.sql`](supabase/schema.sql), jalankan. Ini membuat tabel `profiles` dan `help_requests`, indeks, trigger pembuat profil, kebijakan RLS, dan tiga fungsi alur bantuan (`tawarkan_bantuan`, `konfirmasi_selesai`, `batalkan_bantuan`).
 2. Buka **Authentication > Sign In / Providers**, pastikan **Email** aktif. Untuk demo, matikan **Confirm email** supaya akun baru langsung bisa dipakai tanpa menunggu email masuk.
 3. (Opsional) Nyalakan provider **Google** kalau mau tombol "Masuk dengan Google" jalan. Tambahkan `https://<domain-kamu>/auth/callback` dan `http://localhost:3000/auth/callback` ke daftar **Redirect URLs** di **Authentication > URL Configuration**.
 
@@ -78,12 +80,13 @@ src/
 │   ├── (auth)/                  login & register (header minimal, TANPA sidebar)
 │   │   ├── layout.tsx
 │   │   ├── login/ register/
-│   ├── (app)/                   landing + papan + form + riwayat
+│   ├── (app)/                   landing + papan + form + riwayat + profil
 │   │   ├── layout.tsx           chrome ngikut sesi: header publik (tamu) atau sidebar (login)
 │   │   ├── page.tsx             landing: hero + pratinjau permintaan terbaru
 │   │   ├── bantuan/             papan bantuan (feed + filter) & detail -- publik
 │   │   ├── bantuan-saya/        riwayat permintaan sendiri -- perlu login
-│   │   └── minta-bantuan/       form posting -- perlu login
+│   │   ├── minta-bantuan/       form posting -- perlu login
+│   │   └── profil/              ubah nama & ganti kata sandi -- perlu login
 │   ├── auth/callback/           penukaran kode OAuth jadi sesi
 │   └── error.tsx not-found.tsx  layar error & 404 (chrome minimal, tombol balik ke papan)
 ├── components/
@@ -92,12 +95,13 @@ src/
 ├── lib/
 │   ├── actions/                 orkestrasi: baca form, panggil validasi + data, redirect
 │   │   ├── auth.ts
-│   │   └── bantuan.ts
+│   │   ├── bantuan.ts
+│   │   └── profil.ts
 │   ├── validasi/                aturan bisnis murni, nggak nyentuh Next.js/Supabase
-│   │   ├── auth.ts
+│   │   ├── auth.ts              login, register, ganti nama/sandi
 │   │   └── bantuan.ts
 │   ├── data/                    akses data: Supabase kalau ada env, memori kalau belum
-│   │   ├── sesi.ts              login, daftar, keluar, baca sesi
+│   │   ├── sesi.ts              login, daftar, keluar, ganti nama/sandi, baca sesi
 │   │   └── bantuan.ts           CRUD permintaan bantuan
 │   ├── supabase/                klien server & browser (dipakai lib/data/)
 │   ├── dummy/                   data awal buat mode tanpa Supabase (dipakai lib/data/)
@@ -115,7 +119,7 @@ src/
 
 **RLS dinyalakan, bukan dimatikan.** Anon key itu publik karena ikut kebundel ke JavaScript browser, jadi kebijakan RLS di `schema.sql` inilah yang sebenarnya menjaga data. `proxy.ts` yang menendang tamu dari halaman privat cuma penjaga UX, bukan keamanan.
 
-**Aksi "Saya Ingin Membantu" lewat fungsi database.** Kebijakan UPDATE tidak bisa mengunci per-kolom, jadi kalau relawan diberi izin UPDATE langsung, dia juga bisa mengubah judul dan isi postingan orang. Aksinya dibungkus fungsi `tandai_selesai` yang cuma menyentuh kolom status. Syaratnya ditaruh di `WHERE`, bukan di `IF` sebelumnya, supaya dua relawan yang menekan tombol bersamaan tidak saling menimpa.
+**Alur bantuan lewat tiga fungsi database, bukan UPDATE langsung.** Kebijakan UPDATE tidak bisa mengunci "siapa boleh ubah kolom apa, kapan" sampai sedetail itu -- relawan cuma boleh pindahin menunggu&rarr;diproses, pemilik postingan cuma boleh pindahin diproses&rarr;selesai atau diproses&rarr;menunggu lagi. Tiga aksinya (`tawarkan_bantuan`, `konfirmasi_selesai`, `batalkan_bantuan`) masing-masing jadi fungsi database sendiri dengan syarat di `WHERE`, bukan di `IF` sebelumnya -- supaya dua relawan yang menekan tombol bersamaan tidak saling menimpa, dan nggak ada policy UPDATE buat pihak lain selain pemilik postingan.
 
 **Peta pakai OpenStreetMap, bukan Google Maps.** Leaflet + ubin OpenStreetMap + pencarian alamat Nominatim, semuanya gratis dan tanpa API key. Koordinat (`latitude`/`longitude`) sifatnya opsional di database -- permintaan yang lokasinya diketik manual nilainya tetap `null`, dan halaman detail cuma nampilin mini-peta kalau koordinatnya ada. Pengambilan alamat dan pencarian lokasi butuh koneksi internet, terlepas dari status koneksi ke Supabase.
 
