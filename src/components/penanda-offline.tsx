@@ -27,9 +27,7 @@ export function PenandaOffline() {
   if (!offline) return null
 
   return (
-    // bg-stone-900 sengaja bukan bg-ink: warna ini harus tetap gelap di kedua
-    // tema, sedangkan --color-ink kebalik jadi terang pas dark mode.
-    <p role="status" className="bg-stone-900 px-4 py-2 text-center text-sm font-semibold text-white">
+    <p role="status" className="bg-ink px-4 py-2 text-center text-sm font-semibold text-white">
       Koneksi terputus. Data yang tampil mungkin sudah tidak terbaru.
     </p>
   )

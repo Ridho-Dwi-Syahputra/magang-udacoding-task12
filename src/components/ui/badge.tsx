@@ -10,7 +10,7 @@ export function BadgeStatus({ status }: { status: Status }) {
   return (
     <span
       className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-        selesai ? 'bg-primary text-on-primary' : 'border border-line text-ink-muted'
+        selesai ? 'bg-primary text-white' : 'border border-line text-ink-muted'
       }`}
     >
       {LABEL_STATUS[status]}

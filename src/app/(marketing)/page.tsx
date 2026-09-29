@@ -5,7 +5,9 @@ import { gayaTombol } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/states'
 import { daftarBantuan, ringkasan } from '@/lib/repo'
 
-const JUMLAH_PRATINJAU = 6
+// Ini glimpse doang, bukan papan penuh -- makanya dikit dan nggak ada filter.
+// Yang mau lihat semuanya tinggal klik "Lihat semua".
+const JUMLAH_PRATINJAU = 3
 
 export default async function LandingPage() {
   // Berangkat bareng: dua sumber data yang saling bebas.
@@ -27,12 +29,9 @@ export default async function LandingPage() {
             permintaan atau menawarkan bantuan.
           </p>
 
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <div className="mt-8">
             <Link href="/register" className={gayaTombol('primary')}>
               Daftar dan Mulai Bantu
-            </Link>
-            <Link href="/bantuan" className={gayaTombol('secondary')}>
-              Lihat Semua Permintaan
             </Link>
           </div>
 
@@ -78,7 +77,7 @@ export default async function LandingPage() {
               aksi={{ label: 'Daftar Sekarang', href: '/register' }}
             />
           ) : (
-            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               {pratinjau.map((bantuan) => (
                 <li key={bantuan.id} className="flex">
                   <KartuBantuan bantuan={bantuan} />

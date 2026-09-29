@@ -1,13 +1,13 @@
 import Link from 'next/link'
 import { gayaTombol } from '@/components/ui/button'
-import { TemaToggle } from '@/components/tema-toggle'
 import { logout } from '@/lib/actions/auth'
 import { sesiSekarang } from '@/lib/repo'
 
 /*
-  Halaman depan sebelum masuk ke aplikasi. Headernya sengaja cuma logo +
-  satu-dua tombol, bukan menu navigasi -- yang mau jelajah papan, minta
-  bantuan, dsb. masuk lewat tombol di isi halaman, bukan dari sini.
+  Satu-satunya halaman yang pakai grup ini adalah "/", jadi "Beranda" di nav
+  selalu jadi halaman yang lagi aktif -- makanya ditandai text-primary
+  langsung tanpa perlu deteksi path (layout ini Server Component, nggak ada
+  usePathname).
 */
 export default async function MarketingLayout({ children }: { children: React.ReactNode }) {
   const sesi = await sesiSekarang()
@@ -22,8 +22,19 @@ export default async function MarketingLayout({ children }: { children: React.Re
           Community Help Board
         </Link>
 
+        <nav aria-label="Menu utama" className="hidden items-center gap-6 sm:flex">
+          <Link href="/" aria-current="page" className="text-sm font-semibold text-primary">
+            Beranda
+          </Link>
+          <Link
+            href="/bantuan"
+            className="text-sm font-semibold text-ink-muted hover:text-primary"
+          >
+            Papan Bantuan
+          </Link>
+        </nav>
+
         <div className="flex items-center gap-2">
-          <TemaToggle />
           {sesi ? (
             <>
               <Link href="/bantuan" className={gayaTombol('primary', 'sm')}>
