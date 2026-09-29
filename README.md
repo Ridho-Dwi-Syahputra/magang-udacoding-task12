@@ -6,11 +6,13 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 
 ## Fitur
 
+- Landing page publik yang menampilkan pratinjau permintaan terbaru asli -- bisa dilihat siapa saja tanpa akun. Masuk cuma diminta begitu mau menempel permintaan atau menawarkan bantuan.
 - Daftar/masuk pakai email & kata sandi, plus opsi masuk dengan Google.
 - Papan bantuan yang bisa disaring per kategori; yang masih menunggu naik ke atas sendiri.
 - Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya. Lokasinya bisa diketik manual atau dipilih lewat peta (klik/geser pin, cari alamat, atau pakai GPS).
 - Halaman detail dengan tombol "Saya Ingin Membantu" yang mengubah status jadi selesai. Kalau lokasinya dipilih lewat peta, halaman detail nampilin mini-peta dengan pin di titik itu.
 - Halaman "Bantuan Saya": riwayat permintaan sendiri, lengkap dengan hapus (pakai konfirmasi).
+- Mode terang/gelap, bisa dipilih manual (tombol "Mode Gelap"/"Mode Terang") atau ngikut pengaturan sistem kalau belum pernah dipilih.
 - Responsif: sidebar tetap di kiri pada layar lebar, berubah jadi laci lewat tombol Menu di HP.
 - Skeleton saat memuat, layar kosong ber-ajakan, layar error dengan tombol coba lagi, dan penanda saat koneksi putus.
 
@@ -55,16 +57,25 @@ Setelah punya minimal satu akun, jalankan [`supabase/seed.sql`](supabase/seed.sq
 
 ## Struktur folder
 
+Tiga "grup rute" (tidak muncul di URL), masing-masing dengan chrome sendiri:
+
 ```
 src/
 ├── app/
-│   ├── page.tsx                 beranda + hero
-│   ├── bantuan/                 papan bantuan (feed + filter) & detail
-│   ├── bantuan-saya/            riwayat permintaan sendiri
-│   ├── minta-bantuan/           form posting
-│   ├── login/ register/         halaman auth
+│   ├── layout.tsx               root: html/body, font, penanda offline, skrip anti-kedip tema
+│   ├── (marketing)/             landing page publik (header logo + Masuk/Daftar)
+│   │   ├── layout.tsx
+│   │   └── page.tsx             hero + pratinjau permintaan terbaru + cara kerja
+│   ├── (auth)/                  login & register (header minimal, TANPA sidebar)
+│   │   ├── layout.tsx
+│   │   ├── login/ register/
+│   ├── (app)/                   aplikasi beneran (sidebar navigasi)
+│   │   ├── layout.tsx
+│   │   ├── bantuan/             papan bantuan (feed + filter) & detail
+│   │   ├── bantuan-saya/        riwayat permintaan sendiri
+│   │   └── minta-bantuan/       form posting
 │   ├── auth/callback/           penukaran kode OAuth jadi sesi
-│   └── error.tsx not-found.tsx  layar error & 404
+│   └── error.tsx not-found.tsx  layar error & 404 (chrome minimal, tombol balik ke papan)
 ├── components/
 │   ├── ui/                      tombol, field, badge, skeleton
 │   └── features/                kartu, filter, form, tombol aksi, peta
@@ -92,6 +103,10 @@ src/
 **Peta pakai OpenStreetMap, bukan Google Maps.** Leaflet + ubin OpenStreetMap + pencarian alamat Nominatim, semuanya gratis dan tanpa API key. Koordinat (`latitude`/`longitude`) sifatnya opsional di database -- permintaan yang lokasinya diketik manual nilainya tetap `null`, dan halaman detail cuma nampilin mini-peta kalau koordinatnya ada. Pengambilan alamat dan pencarian lokasi butuh koneksi internet, terlepas dari status koneksi ke Supabase.
 
 **Satu pintu akses data (`lib/repo.ts`).** Halaman dan server action manggil fungsi seperti `daftarBantuan()` atau `simpanBantuan()`, bukan Supabase langsung. Di baliknya, fungsi-fungsi ini nyambung ke Supabase kalau environment variable-nya ada, atau ke data di memori kalau belum -- jadi satu basis kode yang sama bisa didemokan tanpa Supabase maupun jalan penuh dengannya.
+
+**Sidebar aplikasi nggak nempel di semua halaman.** Awalnya sidebar dipasang di root layout, jadi ikut tampil juga di halaman login/register -- link ke "Bantuan Saya" dsb. buat tamu yang belum login cuma mantul balik ke login. Sekarang root layout-nya minimal, dan tiap grup rute (`(marketing)`, `(auth)`, `(app)`) punya layout serta chrome sendiri.
+
+**Mode gelap lewat atribut, bukan class per komponen.** Token warna yang sama (`--color-primary`, `--color-bg`, dst.) didefinisikan ulang di bawah `:root[data-theme="dark"]` dan `@media (prefers-color-scheme: dark)` di `globals.css`; komponen tetap cuma nyebut peran warna (`bg-primary`, `text-ink`) tanpa tahu lagi tema apa yang aktif. Preferensi manual disimpan di localStorage lewat `TemaToggle` (pakai `useSyncExternalStore`, bukan `useState`+`useEffect`, biar label tombolnya ikut sinkron kalau ada perubahan dari luar komponen), dan skrip kecil di `layout.tsx` nulis atributnya sebelum halaman sempat digambar supaya nggak ada kedipan tema saat reload.
 
 ## Deploy ke Vercel
 

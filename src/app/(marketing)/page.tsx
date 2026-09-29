@@ -1,10 +1,15 @@
 import Link from 'next/link'
+import { KartuBantuan } from '@/components/features/kartu-bantuan'
 import { gayaTombol } from '@/components/ui/button'
-import { KATEGORI, LABEL_KATEGORI } from '@/lib/constants'
-import { ringkasan } from '@/lib/repo'
+import { EmptyState } from '@/components/ui/states'
+import { daftarBantuan, ringkasan } from '@/lib/repo'
+
+const JUMLAH_PRATINJAU = 6
 
 export default async function LandingPage() {
-  const { total, selesai } = await ringkasan()
+  // Berangkat bareng: dua sumber data yang saling bebas.
+  const [{ total, selesai }, daftar] = await Promise.all([ringkasan(), daftarBantuan(null)])
+  const pratinjau = daftar.slice(0, JUMLAH_PRATINJAU)
 
   return (
     <div className="space-y-12">
@@ -14,16 +19,18 @@ export default async function LandingPage() {
         </h1>
 
         <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg">
-          Tempel permintaan bantuanmu di papan ini, dari donor darah sampai pinjam kursi roda.
-          Tetangga yang bisa membantu tinggal angkat tangan.
+          Community Help Board itu papan pengumuman warga: siapa pun bisa menempel permintaan
+          bantuan, dari donor darah sampai pinjam kursi roda, dan tetangga yang sanggup tinggal
+          angkat tangan. Papannya bisa dilihat siapa saja -- akun cuma dibutuhkan buat
+          menempel permintaan atau menawarkan bantuan.
         </p>
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link href="/bantuan" className={gayaTombol('primary')}>
-            Lihat Papan Bantuan
+          <Link href="/register" className={gayaTombol('primary')}>
+            Daftar dan Mulai Bantu
           </Link>
-          <Link href="/minta-bantuan" className={gayaTombol('secondary')}>
-            Minta Bantuan
+          <Link href="/bantuan" className={gayaTombol('secondary')}>
+            Lihat Semua Permintaan
           </Link>
         </div>
 
@@ -36,19 +43,34 @@ export default async function LandingPage() {
       </section>
 
       <section>
-        <h2 className="font-display text-xl font-bold text-ink">Bantuan apa yang dicari?</h2>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {KATEGORI.map((kategori) => (
-            <li key={kategori}>
-              <Link
-                href={`/bantuan?kategori=${kategori}`}
-                className="block rounded-card border border-line bg-surface p-4 font-semibold text-ink transition-colors hover:border-primary/50 hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-              >
-                {LABEL_KATEGORI[kategori]}
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 className="font-display text-xl font-bold text-ink">Permintaan terbaru</h2>
+          <Link href="/bantuan" className="text-sm font-semibold text-primary hover:underline">
+            Lihat semua
+          </Link>
+        </div>
+        <p className="mt-1 text-sm text-ink-muted">
+          Boleh dilihat tanpa akun. Masuk dulu kalau mau menempel permintaan atau menawarkan
+          bantuan.
+        </p>
+
+        <div className="mt-4">
+          {pratinjau.length === 0 ? (
+            <EmptyState
+              judul="Papannya masih kosong"
+              pesan="Jadi yang pertama menempel permintaan. Daftar dulu, satu menit saja."
+              aksi={{ label: 'Daftar Sekarang', href: '/register' }}
+            />
+          ) : (
+            <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              {pratinjau.map((bantuan) => (
+                <li key={bantuan.id} className="flex">
+                  <KartuBantuan bantuan={bantuan} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </section>
 
       <section>
@@ -60,11 +82,11 @@ export default async function LandingPage() {
           </li>
           <li>
             <span className="font-semibold text-ink">Tetangga melihat.</span> Permintaanmu muncul di
-            papan dan bisa disaring per kategori.
+            papan dan bisa disaring per kategori, tanpa perlu akun buat sekadar melihat.
           </li>
           <li>
             <span className="font-semibold text-ink">Ada yang angkat tangan.</span> Warga yang
-            sanggup menekan tombol bantu, statusnya jadi selesai.
+            sanggup masuk dulu, lalu menekan tombol bantu -- statusnya jadi selesai.
           </li>
         </ol>
       </section>
