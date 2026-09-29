@@ -1,7 +1,7 @@
 import { HeaderPublik } from '@/components/header-publik'
 import { Rangka } from '@/components/rangka'
 import { Sidebar } from '@/components/sidebar'
-import { sesiSekarang } from '@/lib/repo'
+import { sesiSekarang } from '@/lib/data/sesi'
 
 /*
   Chrome-nya ngikut status login, bukan ngikut URL:

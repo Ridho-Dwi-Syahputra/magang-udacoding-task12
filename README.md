@@ -54,6 +54,19 @@ Buka http://localhost:3000, daftar satu akun lewat `/register`.
 
 Setelah punya minimal satu akun, jalankan [`supabase/seed.sql`](supabase/seed.sql) di SQL Editor. Kalau mau mencoba alur "dibantu orang lain", daftarkan dua akun dulu baru jalankan file ini.
 
+## Arsitektur
+
+Kode di `src/lib/` kepisah jadi tiga lapis, dan tiap lapis kepisah lagi per domain (`auth` / `bantuan`). Satu file, satu tanggung jawab:
+
+| Lapis | Folder | Isinya | Contoh |
+|---|---|---|---|
+| **UI** | `components/`, `app/**/page.tsx` | Komponen React & komposisi halaman. Manggil lapis di bawahnya, nggak pernah nyentuh Supabase atau cookie langsung. | `<FormBantuan />` manggil server action `buatBantuan` |
+| **Orkestrasi (setara "API")** | `lib/actions/` | Next.js Server Action -- pengganti route handler REST di App Router. Tugasnya cuma: baca `FormData`, panggil validasi, panggil data layer, putuskan redirect/respons. | `buatBantuan()` di `lib/actions/bantuan.ts` |
+| **Aturan bisnis** | `lib/validasi/` | Fungsi murni: nerima nilai, ngembaliin nilai (pesan error atau `null`). Nggak ada `async`, nggak ada `import` dari Next.js atau Supabase, jadi gampang ditest sendirian. | `validasiBantuan()`, `bacaKoordinat()` |
+| **Data** | `lib/data/` | Satu-satunya lapis yang boleh manggil Supabase atau baca/tulis cookie. Tiap fungsi punya cabang Supabase dan cabang data-di-memori (lihat "Cara menjalankan" di atas). | `simpanBantuan()`, `loginDenganSandi()` |
+
+Kenapa dipisah gini: `lib/actions/bantuan.ts` sekarang beneran cuma ~90 baris orkestrasi, bisa dibaca dari atas ke bawah tanpa ketemu satu pun detail "gimana cara nyimpen ke Supabase" atau "aturan judul minimal berapa huruf" -- itu semua ada di file lain yang namanya juga jelas nunjukkin isinya. Ganti aturan validasi nggak perlu buka file yang isinya query database, dan sebaliknya.
+
 ## Struktur folder
 
 Dua "grup rute" (tidak muncul di URL):
@@ -77,10 +90,17 @@ src/
 │   ├── ui/                      tombol, field, badge, skeleton
 │   └── features/                kartu, filter, form, tombol aksi, peta
 ├── lib/
-│   ├── actions/                 server action: auth & CRUD bantuan
-│   ├── supabase/                klien server & browser
-│   ├── dummy/                   data awal buat mode tanpa Supabase
-│   ├── repo.ts                  satu pintu akses data (dummy atau Supabase)
+│   ├── actions/                 orkestrasi: baca form, panggil validasi + data, redirect
+│   │   ├── auth.ts
+│   │   └── bantuan.ts
+│   ├── validasi/                aturan bisnis murni, nggak nyentuh Next.js/Supabase
+│   │   ├── auth.ts
+│   │   └── bantuan.ts
+│   ├── data/                    akses data: Supabase kalau ada env, memori kalau belum
+│   │   ├── sesi.ts              login, daftar, keluar, baca sesi
+│   │   └── bantuan.ts           CRUD permintaan bantuan
+│   ├── supabase/                klien server & browser (dipakai lib/data/)
+│   ├── dummy/                   data awal buat mode tanpa Supabase (dipakai lib/data/)
 │   └── constants.ts types.ts    kategori, status, bentuk data
 └── proxy.ts                     refresh sesi + penjaga rute privat
 ```
@@ -99,7 +119,7 @@ src/
 
 **Peta pakai OpenStreetMap, bukan Google Maps.** Leaflet + ubin OpenStreetMap + pencarian alamat Nominatim, semuanya gratis dan tanpa API key. Koordinat (`latitude`/`longitude`) sifatnya opsional di database -- permintaan yang lokasinya diketik manual nilainya tetap `null`, dan halaman detail cuma nampilin mini-peta kalau koordinatnya ada. Pengambilan alamat dan pencarian lokasi butuh koneksi internet, terlepas dari status koneksi ke Supabase.
 
-**Satu pintu akses data (`lib/repo.ts`).** Halaman dan server action manggil fungsi seperti `daftarBantuan()` atau `simpanBantuan()`, bukan Supabase langsung. Di baliknya, fungsi-fungsi ini nyambung ke Supabase kalau environment variable-nya ada, atau ke data di memori kalau belum -- jadi satu basis kode yang sama bisa didemokan tanpa Supabase maupun jalan penuh dengannya.
+**Satu pintu akses data, per domain (`lib/data/`).** Server action manggil fungsi seperti `daftarBantuan()` atau `loginDenganSandi()`, bukan Supabase langsung. Di baliknya, fungsi-fungsi ini nyambung ke Supabase kalau environment variable-nya ada, atau ke data di memori kalau belum -- jadi satu basis kode yang sama bisa didemokan tanpa Supabase maupun jalan penuh dengannya. Lihat bagian "Arsitektur" di atas.
 
 **Chrome ngikut status login, bukan URL.** `(app)/layout.tsx` cek sesi lalu milih: belum login dapat `HeaderPublik` (logo + nav + Masuk/Daftar, sama persis di landing maupun papan bantuan), sudah login dapat shell sidebar. Tanpa ini, tamu yang klik "Papan Bantuan" dari landing bakal ketarik ke shell sidebar punya orang login -- padahal dia belum tentu bisa pakai separuh menunya. `/minta-bantuan` dan `/bantuan-saya` tetap perlu login (digembok `proxy.ts`), jadi cabang "belum login" di layout ini praktis cuma pernah dilihat orang di `/` dan `/bantuan`.
 

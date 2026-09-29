@@ -1,4 +1,3 @@
-import { cookies } from 'next/headers'
 import { modeDummy } from '@/lib/env'
 import { dataDummy, type BarisDummy } from '@/lib/dummy/data'
 import { supabaseServer } from '@/lib/supabase/server'
@@ -6,14 +5,11 @@ import type { Kategori } from '@/lib/constants'
 import { KOLOM_BANTUAN, type BantuanDenganProfil } from '@/lib/types'
 
 /*
-  Satu pintu akses data. Halaman dan server action cuma kenal fungsi-fungsi di
-  sini, jadi pindah dari data dummy ke Supabase nggak nyentuh satu halaman pun.
+  Data layer buat permintaan bantuan. Tiap fungsi punya dua cabang: ke
+  Supabase kalau environment variable-nya ada, ke data di memori kalau
+  belum (lihat lib/env.ts). Pemanggilnya (halaman, server action) nggak
+  perlu tahu cabang mana yang lagi jalan.
 */
-
-export const COOKIE_DEMO = 'demo_user'
-
-export type Sesi = { id: string; nama: string }
-
 
 // ---------------------------------------------------------------- dummy
 
@@ -30,25 +26,6 @@ function urut(a: BarisDummy, b: BarisDummy) {
   // Sama seperti query Supabase: "menunggu" di atas "selesai", lalu terbaru dulu.
   if (a.status !== b.status) return a.status < b.status ? -1 : 1
   return b.created_at.localeCompare(a.created_at)
-}
-
-// ---------------------------------------------------------------- sesi
-
-export async function sesiSekarang(): Promise<Sesi | null> {
-  if (modeDummy()) {
-    const id = (await cookies()).get(COOKIE_DEMO)?.value
-    const p = dataDummy().pengguna.find((x) => x.id === id)
-    return p ? { id: p.id, nama: p.nama } : null
-  }
-
-  const supabase = await supabaseServer()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data } = await supabase.from('profiles').select('nama').eq('id', user.id).single()
-  return { id: user.id, nama: data?.nama ?? user.email?.split('@')[0] ?? 'warga' }
 }
 
 // ---------------------------------------------------------------- baca
@@ -204,4 +181,3 @@ export async function hapusMilik(userId: string, id: string): Promise<boolean> {
   const { data, error } = await supabase.from('help_requests').delete().eq('id', id).select('id')
   return !error && Boolean(data?.length)
 }
-

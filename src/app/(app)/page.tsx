@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { KartuBantuan } from '@/components/features/kartu-bantuan'
 import { gayaTombol } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/states'
-import { daftarBantuan, ringkasan } from '@/lib/repo'
+import { daftarBantuan, ringkasan } from '@/lib/data/bantuan'
 
 // Ini glimpse doang, bukan papan penuh -- makanya dikit dan nggak ada filter.
 // Yang mau lihat semuanya tinggal klik "Lihat semua".

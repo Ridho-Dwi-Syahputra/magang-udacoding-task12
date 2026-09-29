@@ -2,31 +2,23 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { BATAS_DESKRIPSI, BATAS_JUDUL, BATAS_LOKASI, isKategori } from '@/lib/constants'
-import { hapusMilik, selesaikanBantuan, sesiSekarang, simpanBantuan } from '@/lib/repo'
+import type { Kategori } from '@/lib/constants'
+import { hapusMilik, selesaikanBantuan, simpanBantuan } from '@/lib/data/bantuan'
+import { sesiSekarang } from '@/lib/data/sesi'
+import { bacaKoordinat, validasiBantuan } from '@/lib/validasi/bantuan'
+
+/*
+  Lapis orkestrasi: baca FormData, validasi, panggil data layer, putuskan
+  respons/redirect. Aturan "judul minimal 5 huruf" dkk. ada di
+  lib/validasi/bantuan.ts, cara nyimpennya ada di lib/data/bantuan.ts --
+  file ini cuma yang nyambungin keduanya.
+*/
 
 export type StatusBantuan = {
   error?: string
   field?: Record<string, string>
   nilai?: Record<string, string>
 } | null
-
-/* Titik dari peta cuma pemanis lokasi, bukan data wajib. Kalau salah satu
-   angkanya rusak atau di luar rentang koordinat yang valid, keduanya
-   dianggap kosong saja daripada nge-block pengiriman gara-gara ini. */
-function bacaKoordinat(formData: FormData): { latitude: number | null; longitude: number | null } {
-  const latStr = String(formData.get('latitude') ?? '').trim()
-  const lngStr = String(formData.get('longitude') ?? '').trim()
-  // Dicek kosong dulu: Number('') hasilnya 0, bukan NaN, jadi tanpa ini
-  // lokasi manual (tanpa pin) malah kesimpen sebagai koordinat 0,0.
-  if (!latStr || !lngStr) return { latitude: null, longitude: null }
-
-  const lat = Number(latStr)
-  const lng = Number(lngStr)
-  const valid =
-    Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180
-  return valid ? { latitude: lat, longitude: lng } : { latitude: null, longitude: null }
-}
 
 export async function buatBantuan(
   _sebelumnya: StatusBantuan,
@@ -36,7 +28,10 @@ export async function buatBantuan(
   const description = String(formData.get('description') ?? '').trim()
   const category = String(formData.get('category') ?? '')
   const location = String(formData.get('location') ?? '').trim()
-  const { latitude, longitude } = bacaKoordinat(formData)
+  const { latitude, longitude } = bacaKoordinat(
+    String(formData.get('latitude') ?? ''),
+    String(formData.get('longitude') ?? ''),
+  )
 
   // Dikembalikan ke form kalau ada yang salah, biar ketikan user nggak hangus.
   const nilai = {
@@ -48,25 +43,24 @@ export async function buatBantuan(
     longitude: longitude !== null ? String(longitude) : '',
   }
 
-  const field: Record<string, string> = {}
-  if (title.length < 5) field.title = 'Judul minimal 5 huruf.'
-  else if (title.length > BATAS_JUDUL) field.title = `Judul maksimal ${BATAS_JUDUL} huruf.`
-
-  if (description.length < 10) field.description = 'Ceritakan sedikit lebih detail, minimal 10 huruf.'
-  else if (description.length > BATAS_DESKRIPSI)
-    field.description = `Deskripsi maksimal ${BATAS_DESKRIPSI} huruf.`
-
-  if (!isKategori(category)) field.category = 'Pilih salah satu kategori.'
-
-  if (location.length < 3) field.location = 'Tulis lokasinya, minimal 3 huruf.'
-  else if (location.length > BATAS_LOKASI) field.location = `Lokasi maksimal ${BATAS_LOKASI} huruf.`
-
-  if (Object.keys(field).length > 0 || !isKategori(category)) return { field, nilai }
+  const field = validasiBantuan({ title, description, category, location })
+  if (Object.keys(field).length > 0) return { field, nilai }
 
   const sesi = await sesiSekarang()
   if (!sesi) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.', nilai }
 
-  const id = await simpanBantuan(sesi.id, { title, description, category, location, latitude, longitude })
+  const id = await simpanBantuan(sesi.id, {
+    title,
+    description,
+    // validasiBantuan() di atas udah mastiin category ini salah satu Kategori
+    // yang sah (kalau enggak, field.category bakal keisi dan udah return duluan).
+    // TypeScript nggak bisa nurunin itu dari objek error yang balik dari fungsi
+    // lain, jadi di-assert manual di sini.
+    category: category as Kategori,
+    location,
+    latitude,
+    longitude,
+  })
   if (!id) return { error: 'Permintaan gagal dikirim. Coba lagi sebentar lagi.', nilai }
 
   revalidatePath('/bantuan')

@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { gayaTombol } from '@/components/ui/button'
 import { MenuLink } from '@/components/menu-link'
 import { logout } from '@/lib/actions/auth'
-import { sesiSekarang } from '@/lib/repo'
+import { sesiSekarang } from '@/lib/data/sesi'
 
 export async function Sidebar() {
   const sesi = await sesiSekarang()

@@ -3,7 +3,7 @@ import { FilterKategori } from '@/components/features/filter-kategori'
 import { KartuBantuan } from '@/components/features/kartu-bantuan'
 import { EmptyState } from '@/components/ui/states'
 import { LABEL_KATEGORI, isKategori } from '@/lib/constants'
-import { daftarBantuan } from '@/lib/repo'
+import { daftarBantuan } from '@/lib/data/bantuan'
 
 export const metadata: Metadata = { title: 'Papan Bantuan' }
 
