@@ -6,7 +6,7 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 
 ## Fitur
 
-- Landing page publik dengan hero dua kolom (teks + ilustrasi), nav ke Beranda/Papan Bantuan, dan pratinjau tiga permintaan terbaru asli -- bisa dilihat siapa saja tanpa akun. Masuk cuma diminta begitu mau menempel permintaan atau menawarkan bantuan.
+- Landing page publik dengan hero dua kolom (teks + ilustrasi), nav ke Beranda/Papan Bantuan, dan pratinjau tiga permintaan terbaru asli -- bisa dilihat siapa saja tanpa akun. Masuk cuma diminta begitu mau menempel permintaan atau menawarkan bantuan. Chrome-nya ngikut status login, bukan URL: tamu yang klik "Papan Bantuan" tetap dapat header publik yang sama, bukan langsung ketarik ke shell sidebar punya orang login.
 - Daftar/masuk pakai email & kata sandi, plus opsi masuk dengan Google.
 - Papan bantuan yang bisa disaring per kategori; yang masih menunggu naik ke atas sendiri.
 - Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya. Lokasinya bisa diketik manual atau dipilih lewat peta (klik/geser pin, cari alamat, atau pakai GPS).
@@ -56,23 +56,21 @@ Setelah punya minimal satu akun, jalankan [`supabase/seed.sql`](supabase/seed.sq
 
 ## Struktur folder
 
-Tiga "grup rute" (tidak muncul di URL), masing-masing dengan chrome sendiri:
+Dua "grup rute" (tidak muncul di URL):
 
 ```
 src/
 ├── app/
 │   ├── layout.tsx               root: html/body, font, penanda offline
-│   ├── (marketing)/             landing page publik (header logo + Masuk/Daftar)
-│   │   ├── layout.tsx
-│   │   └── page.tsx             hero + pratinjau permintaan terbaru + cara kerja
 │   ├── (auth)/                  login & register (header minimal, TANPA sidebar)
 │   │   ├── layout.tsx
 │   │   ├── login/ register/
-│   ├── (app)/                   aplikasi beneran (sidebar navigasi)
-│   │   ├── layout.tsx
-│   │   ├── bantuan/             papan bantuan (feed + filter) & detail
-│   │   ├── bantuan-saya/        riwayat permintaan sendiri
-│   │   └── minta-bantuan/       form posting
+│   ├── (app)/                   landing + papan + form + riwayat
+│   │   ├── layout.tsx           chrome ngikut sesi: header publik (tamu) atau sidebar (login)
+│   │   ├── page.tsx             landing: hero + pratinjau permintaan terbaru
+│   │   ├── bantuan/             papan bantuan (feed + filter) & detail -- publik
+│   │   ├── bantuan-saya/        riwayat permintaan sendiri -- perlu login
+│   │   └── minta-bantuan/       form posting -- perlu login
 │   ├── auth/callback/           penukaran kode OAuth jadi sesi
 │   └── error.tsx not-found.tsx  layar error & 404 (chrome minimal, tombol balik ke papan)
 ├── components/
@@ -103,7 +101,7 @@ src/
 
 **Satu pintu akses data (`lib/repo.ts`).** Halaman dan server action manggil fungsi seperti `daftarBantuan()` atau `simpanBantuan()`, bukan Supabase langsung. Di baliknya, fungsi-fungsi ini nyambung ke Supabase kalau environment variable-nya ada, atau ke data di memori kalau belum -- jadi satu basis kode yang sama bisa didemokan tanpa Supabase maupun jalan penuh dengannya.
 
-**Sidebar aplikasi nggak nempel di semua halaman.** Awalnya sidebar dipasang di root layout, jadi ikut tampil juga di halaman login/register -- link ke "Bantuan Saya" dsb. buat tamu yang belum login cuma mantul balik ke login. Sekarang root layout-nya minimal, dan tiap grup rute (`(marketing)`, `(auth)`, `(app)`) punya layout serta chrome sendiri.
+**Chrome ngikut status login, bukan URL.** `(app)/layout.tsx` cek sesi lalu milih: belum login dapat `HeaderPublik` (logo + nav + Masuk/Daftar, sama persis di landing maupun papan bantuan), sudah login dapat shell sidebar. Tanpa ini, tamu yang klik "Papan Bantuan" dari landing bakal ketarik ke shell sidebar punya orang login -- padahal dia belum tentu bisa pakai separuh menunya. `/minta-bantuan` dan `/bantuan-saya` tetap perlu login (digembok `proxy.ts`), jadi cabang "belum login" di layout ini praktis cuma pernah dilihat orang di `/` dan `/bantuan`.
 
 ## Deploy ke Vercel
 

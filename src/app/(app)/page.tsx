@@ -87,24 +87,6 @@ export default async function LandingPage() {
           )}
         </div>
       </section>
-
-      <section>
-        <h2 className="font-display text-xl font-bold text-ink">Cara kerjanya</h2>
-        <ol className="mt-4 max-w-xl list-decimal space-y-3 pl-5 text-ink-muted marker:font-bold marker:text-primary">
-          <li>
-            <span className="font-semibold text-ink">Tempel permintaan.</span> Tulis butuh apa, di
-            mana, dan kategorinya. Perlu akun dulu.
-          </li>
-          <li>
-            <span className="font-semibold text-ink">Tetangga melihat.</span> Permintaanmu muncul di
-            papan dan bisa disaring per kategori, tanpa perlu akun buat sekadar melihat.
-          </li>
-          <li>
-            <span className="font-semibold text-ink">Ada yang angkat tangan.</span> Warga yang
-            sanggup masuk dulu, lalu menekan tombol bantu -- statusnya jadi selesai.
-          </li>
-        </ol>
-      </section>
     </div>
   )
 }
