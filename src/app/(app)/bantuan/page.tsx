@@ -1,17 +1,32 @@
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { FilterKategori } from '@/components/features/filter-kategori'
 import { KartuBantuan } from '@/components/features/kartu-bantuan'
+import { gayaTombol } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/states'
 import { LABEL_KATEGORI, isKategori } from '@/lib/constants'
 import { daftarBantuan } from '@/lib/data/bantuan'
 
 export const metadata: Metadata = { title: 'Papan Bantuan' }
 
-export default async function PapanPage({ searchParams }: PageProps<'/bantuan'>) {
-  const { kategori } = await searchParams
-  const filter = isKategori(kategori) ? kategori : null
+function angkaHalaman(nilai: string | undefined): number {
+  const n = Number(nilai)
+  return Number.isInteger(n) && n > 0 ? n : 1
+}
 
-  const daftar = await daftarBantuan(filter)
+export default async function PapanPage({ searchParams }: PageProps<'/bantuan'>) {
+  const { kategori, halaman: halamanMentah } = await searchParams
+  const filter = isKategori(kategori) ? kategori : null
+  const halaman = angkaHalaman(
+    typeof halamanMentah === 'string' ? halamanMentah : undefined,
+  )
+
+  const papan = await daftarBantuan(filter, halaman)
+  const { data: daftar, meta } = papan
+
+  // Query string dasar buat link halaman lain, tanpa param "halaman" sendiri
+  // (itu ditempel beda-beda per tombol di bawah).
+  const queryDasar = filter ? `?kategori=${filter}&` : '?'
 
   return (
     <div>
@@ -38,13 +53,50 @@ export default async function PapanPage({ searchParams }: PageProps<'/bantuan'>)
             aksi={{ label: 'Minta Bantuan', href: '/minta-bantuan' }}
           />
         ) : (
-          <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            {daftar.map((bantuan) => (
-              <li key={bantuan.id} className="flex">
-                <KartuBantuan bantuan={bantuan} />
-              </li>
-            ))}
-          </ul>
+          <>
+            <ul className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {daftar.map((bantuan) => (
+                <li key={bantuan.id} className="flex">
+                  <KartuBantuan bantuan={bantuan} />
+                </li>
+              ))}
+            </ul>
+
+            {meta.totalHalaman > 1 && (
+              <div className="mt-6 flex items-center justify-between gap-3 text-sm">
+                <span className="text-ink-muted">
+                  Halaman <span className="tabular">{meta.halaman}</span> dari{' '}
+                  <span className="tabular">{meta.totalHalaman}</span> ({meta.total} permintaan)
+                </span>
+                <div className="flex gap-2">
+                  {meta.halaman > 1 ? (
+                    <Link
+                      href={`/bantuan${queryDasar}halaman=${meta.halaman - 1}`}
+                      className={gayaTombol('secondary', 'sm')}
+                    >
+                      Sebelumnya
+                    </Link>
+                  ) : (
+                    <span className={`${gayaTombol('secondary', 'sm')} opacity-40`} aria-disabled>
+                      Sebelumnya
+                    </span>
+                  )}
+                  {meta.halaman < meta.totalHalaman ? (
+                    <Link
+                      href={`/bantuan${queryDasar}halaman=${meta.halaman + 1}`}
+                      className={gayaTombol('secondary', 'sm')}
+                    >
+                      Berikutnya
+                    </Link>
+                  ) : (
+                    <span className={`${gayaTombol('secondary', 'sm')} opacity-40`} aria-disabled>
+                      Berikutnya
+                    </span>
+                  )}
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

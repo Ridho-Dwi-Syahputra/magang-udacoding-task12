@@ -8,7 +8,7 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 
 - Landing page publik dengan hero dua kolom (teks + ilustrasi), nav ke Beranda/Papan Bantuan, dan pratinjau tiga permintaan terbaru asli -- bisa dilihat siapa saja tanpa akun. Masuk cuma diminta begitu mau menempel permintaan atau menawarkan bantuan. Chrome-nya ngikut status login, bukan URL: tamu yang klik "Papan Bantuan" tetap dapat header publik yang sama, bukan langsung ketarik ke shell sidebar punya orang login.
 - Daftar/masuk pakai email & kata sandi, plus opsi masuk dengan Google.
-- Papan bantuan yang bisa disaring per kategori; yang masih menunggu naik ke atas sendiri.
+- Papan bantuan yang bisa disaring per kategori, dipaginasi 12 per halaman (bukan sekadar dibatasi terus sisanya ilang); yang masih menunggu naik ke atas sendiri.
 - Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya. Lokasinya bisa diketik manual atau dipilih lewat peta (klik/geser pin, cari alamat, atau pakai GPS).
 - Alur bantuan tiga tahap: **Menunggu** &rarr; relawan menawarkan diri jadi **Diproses** &rarr; pemilik postingan mengonfirmasi jadi **Selesai** (atau membatalkan tawaran kalau relawannya nggak kunjung ngerjain, dibuka lagi jadi Menunggu). Bukan langsung "selesai" begitu ada yang klik -- pemilik postingan yang berhak mastiin.
 - Halaman "Bantuan Saya": riwayat permintaan sendiri, lengkap dengan siapa yang menawarkan/membantu, tombol konfirmasi/batal, dan hapus (pakai konfirmasi, cuma buat yang masih menunggu).
@@ -124,6 +124,8 @@ src/
 **Peta pakai OpenStreetMap, bukan Google Maps.** Leaflet + ubin OpenStreetMap + pencarian alamat Nominatim, semuanya gratis dan tanpa API key. Koordinat (`latitude`/`longitude`) sifatnya opsional di database -- permintaan yang lokasinya diketik manual nilainya tetap `null`, dan halaman detail cuma nampilin mini-peta kalau koordinatnya ada. Pengambilan alamat dan pencarian lokasi butuh koneksi internet, terlepas dari status koneksi ke Supabase.
 
 **Satu pintu akses data, per domain (`lib/data/`).** Server action manggil fungsi seperti `daftarBantuan()` atau `loginDenganSandi()`, bukan Supabase langsung. Di baliknya, fungsi-fungsi ini nyambung ke Supabase kalau environment variable-nya ada, atau ke data di memori kalau belum -- jadi satu basis kode yang sama bisa didemokan tanpa Supabase maupun jalan penuh dengannya. Lihat bagian "Arsitektur" di atas.
+
+**Pagination beneran di papan, bukan cuma "mentok di N baris".** `daftarBantuan()` di `lib/data/bantuan.ts` pakai `.range()` Supabase (bukan `.limit()`), 12 baris per halaman, dan urutannya dijaga lewat kolom `status_urutan` (generated column di `schema.sql`) supaya "menunggu selalu di atas" tetap benar walau datanya udah dipotong per halaman -- kalau diurut di JS SETELAH dipotong, potongannya keburu salah duluan.
 
 **Chrome ngikut status login, bukan URL.** `(app)/layout.tsx` cek sesi lalu milih: belum login dapat `HeaderPublik` (logo + nav + Masuk/Daftar, sama persis di landing maupun papan bantuan), sudah login dapat shell sidebar. Tanpa ini, tamu yang klik "Papan Bantuan" dari landing bakal ketarik ke shell sidebar punya orang login -- padahal dia belum tentu bisa pakai separuh menunya. `/minta-bantuan` dan `/bantuan-saya` tetap perlu login (digembok `proxy.ts`), jadi cabang "belum login" di layout ini praktis cuma pernah dilihat orang di `/` dan `/bantuan`.
 

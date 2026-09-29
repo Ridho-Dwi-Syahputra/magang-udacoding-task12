@@ -71,6 +71,21 @@ create table if not exists public.help_requests (
   confirmed_at timestamptz,
   created_at  timestamptz not null default now(),
 
+  -- Kolom bantu buat urutan tampil di papan: yang masih butuh relawan naik
+  -- ke atas, yang udah kelar turun ke bawah. Bukan alfabetis (huruf "d" di
+  -- "diproses" duluan dari "m" di "menunggu", padahal urutannya harus
+  -- kebalik) -- makanya dipetakan manual ke angka lewat kolom generated ini,
+  -- supaya query bisa .order() langsung di database sebelum dipotong per
+  -- halaman. Kalau diurut di JS SETELAH dipotong per halaman, potongannya
+  -- keburu salah duluan.
+  status_urutan smallint generated always as (
+    case status
+      when 'menunggu' then 0
+      when 'diproses' then 1
+      when 'selesai' then 2
+    end
+  ) stored,
+
   -- Tiap status punya kombinasi kolom yang sah masing-masing. Dijaga di
   -- database, bukan cuma di form, karena database yang jadi sumber kebenarannya.
   constraint penolong_sejalan_dengan_status check (
@@ -94,6 +109,9 @@ create index if not exists help_requests_created_idx on public.help_requests (cr
 create index if not exists help_requests_status_created_idx on public.help_requests (status, created_at desc);
 create index if not exists help_requests_category_created_idx on public.help_requests (category, created_at desc);
 create index if not exists help_requests_user_idx on public.help_requests (user_id, created_at desc);
+-- Ini yang beneran dipakai buat urutan tampil di papan (lihat daftarBantuan
+-- di lib/data/bantuan.ts) -- status_urutan dulu, baru created_at.
+create index if not exists help_requests_urutan_idx on public.help_requests (status_urutan, created_at desc);
 
 -- ---------------------------------------------------------------------------
 -- 3. Row Level Security

@@ -40,26 +40,67 @@ function urut(a: { status: Status; created_at: string }, b: { status: Status; cr
 
 // ---------------------------------------------------------------- baca
 
-export async function daftarBantuan(kategori: Kategori | null): Promise<BantuanDenganProfil[]> {
+export const PER_HALAMAN_PAPAN = 12
+
+export type HasilPapan = {
+  data: BantuanDenganProfil[]
+  meta: { halaman: number; totalHalaman: number; total: number }
+}
+
+/*
+  Pagination beneran, bukan cuma "mentok di N baris". Kalau permintaan udah
+  ratusan, sisanya nggak boleh ilang gitu aja -- harus ada halaman berikutnya
+  buat lihatnya.
+
+  Dipanggil juga sama landing page buat pratinjau (halaman=1, perHalaman=3),
+  jadi urutan prioritasnya (menunggu dulu, baru diproses, baru selesai) harus
+  konsisten di kedua pemakaian.
+*/
+export async function daftarBantuan(
+  kategori: Kategori | null,
+  halaman = 1,
+  perHalaman = PER_HALAMAN_PAPAN,
+): Promise<HasilPapan> {
   if (modeDummy()) {
-    return dataDummy()
+    const semua = dataDummy()
       .baris.filter((b) => !kategori || b.category === kategori)
       .sort(urut)
-      .map(gabung)
+
+    const total = semua.length
+    const totalHalaman = Math.max(1, Math.ceil(total / perHalaman))
+    const mulai = (halaman - 1) * perHalaman
+    const data = semua.slice(mulai, mulai + perHalaman).map(gabung)
+
+    return { data, meta: { halaman, totalHalaman, total } }
   }
 
   const supabase = await supabaseServer()
-  // Diurut di JS lewat urut() di bawah, bukan .order('status') -- alfabetis
-  // "diproses" < "menunggu" < "selesai" nggak sama dengan urutan prioritas
-  // yang kita mau. Barisnya cuma dibatasi 60, jadi ngurut ulang di sini murah.
-  let query = supabase.from('help_requests').select(KOLOM_BANTUAN).order('created_at', {
-    ascending: false,
-  }).limit(60)
+  const mulai = (halaman - 1) * perHalaman
+  const akhir = mulai + perHalaman - 1
+
+  // Diurut lewat status_urutan (kolom generated di database, lihat
+  // schema.sql), bukan .order('status') -- alfabetis "diproses" < "menunggu"
+  // nggak sama dengan urutan prioritas yang kita mau. Urutannya harus bener
+  // di level query, bukan diurut ulang di JS abis di-.range(), soalnya
+  // .range() motong per halaman SEBELUM sempat diurut ulang di sini.
+  let query = supabase
+    .from('help_requests')
+    .select(KOLOM_BANTUAN, { count: 'exact' })
+    .order('status_urutan', { ascending: true })
+    .order('created_at', { ascending: false })
+    .range(mulai, akhir)
   if (kategori) query = query.eq('category', kategori)
 
-  const { data, error } = await query
+  const { data, error, count } = await query
   if (error) throw new Error(`Gagal memuat papan bantuan: ${error.message}`)
-  return ((data ?? []) as unknown as BantuanDenganProfil[]).sort(urut)
+
+  const total = count ?? 0
+  const totalHalaman = Math.max(1, Math.ceil(total / perHalaman))
+
+  return {
+    data: (data ?? []) as unknown as BantuanDenganProfil[],
+    meta: { halaman, totalHalaman, total },
+  }
 }
 
 export async function ambilBantuan(id: string): Promise<BantuanDenganProfil | null> {

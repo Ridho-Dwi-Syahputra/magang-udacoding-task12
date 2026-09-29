@@ -11,8 +11,11 @@ const JUMLAH_PRATINJAU = 3
 
 export default async function LandingPage() {
   // Berangkat bareng: dua sumber data yang saling bebas.
-  const [{ total, selesai }, daftar] = await Promise.all([ringkasan(), daftarBantuan(null)])
-  const pratinjau = daftar.slice(0, JUMLAH_PRATINJAU)
+  const [{ total, selesai }, papan] = await Promise.all([
+    ringkasan(),
+    daftarBantuan(null, 1, JUMLAH_PRATINJAU),
+  ])
+  const pratinjau = papan.data
 
   return (
     <div className="space-y-12">
