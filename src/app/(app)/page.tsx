@@ -26,9 +26,7 @@ export default async function LandingPage() {
           </h1>
 
           <p className="mt-4 text-base leading-relaxed text-ink-muted sm:text-lg">
-            Donor darah, pinjam kursi roda, cari tenaga relawan -- tempel yang kamu butuhkan, atau
-            bantu tetangga yang kesusahan. Boleh dilihat tanpa akun, masuk dulu kalau mau ikut
-            menempel atau membantu.
+            Tempat berbagi informasi untuk saling tolong-menolong antar warga. Mulai dari mencari relawan, pinjam barang, hingga saling berdonasi. Siapapun bisa melihat papan permintaan, tapi pastikan Anda sudah masuk (login) untuk mulai ikut membantu.
           </p>
 
           <div className="mt-8">
