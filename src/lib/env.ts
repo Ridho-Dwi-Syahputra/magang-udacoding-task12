@@ -15,3 +15,12 @@ export function envSupabase() {
 
   return { url, anonKey }
 }
+
+/*
+  Mode dummy = env Supabase belum diisi. Semua data datang dari memori server
+  (src/lib/dummy/data.ts), jadi seluruh alur bisa didemokan tanpa database.
+  Begitu .env.local diisi, aplikasi otomatis pindah ke Supabase tanpa ubah kode.
+*/
+export function modeDummy() {
+  return !process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+}

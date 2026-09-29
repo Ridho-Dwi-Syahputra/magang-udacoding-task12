@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { AlertCircle, HandHeart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { tandaiSelesai } from '@/lib/actions/bantuan'
 
@@ -30,13 +29,11 @@ export function TombolBantu({ id }: { id: string }) {
         labelProses="Mengirim..."
         className="w-full sm:w-auto"
       >
-        <HandHeart className="size-4" aria-hidden />
         Saya Ingin Membantu
       </Button>
 
       {error && (
-        <p role="alert" className="mt-2 flex items-start gap-1.5 text-sm text-danger">
-          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <p role="alert" className="mt-2 text-sm text-danger">
           {error}
         </p>
       )}

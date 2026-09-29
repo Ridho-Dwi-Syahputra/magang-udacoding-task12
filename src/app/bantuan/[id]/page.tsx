@@ -1,28 +1,12 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ArrowLeft, CheckCircle2, MapPin, User } from 'lucide-react'
 import { BadgeKategori, BadgeStatus } from '@/components/ui/badge'
 import { gayaTombol } from '@/components/ui/button'
 import { TombolBantu } from '@/components/features/tombol-bantu'
 import { TombolHapus } from '@/components/features/tombol-hapus'
 import { tanggalLengkap, waktuRelatif } from '@/lib/format'
-import { supabaseServer } from '@/lib/supabase/server'
-import { KOLOM_BANTUAN, type BantuanDenganProfil } from '@/lib/types'
-
-async function ambilBantuan(id: string) {
-  const supabase = await supabaseServer()
-  const { data, error } = await supabase
-    .from('help_requests')
-    .select(KOLOM_BANTUAN)
-    .eq('id', id)
-    .maybeSingle()
-
-  // maybeSingle() balikin data null tanpa error kalau barisnya nggak ada.
-  // Error yang tersisa berarti masalah beneran, bukan "nggak ketemu".
-  if (error) throw new Error(`Gagal memuat permintaan: ${error.message}`)
-  return data as unknown as BantuanDenganProfil | null
-}
+import { ambilBantuan, sesiSekarang } from '@/lib/repo'
 
 export async function generateMetadata({ params }: PageProps<'/bantuan/[id]'>): Promise<Metadata> {
   const { id } = await params
@@ -33,76 +17,63 @@ export async function generateMetadata({ params }: PageProps<'/bantuan/[id]'>): 
 export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>) {
   const { id } = await params
 
-  const supabase = await supabaseServer()
-  const [bantuan, { data: auth }] = await Promise.all([ambilBantuan(id), supabase.auth.getUser()])
+  const [bantuan, user] = await Promise.all([ambilBantuan(id), sesiSekarang()])
 
   if (!bantuan) notFound()
 
-  const user = auth.user
   const milikSendiri = user?.id === bantuan.user_id
   const bolehBantu = Boolean(user) && !milikSendiri && bantuan.status === 'menunggu'
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-2xl">
       <Link
         href="/bantuan"
-        className="inline-flex items-center gap-1.5 text-sm font-semibold text-ink-muted hover:text-primary"
+        className="text-sm font-semibold text-ink-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        <ArrowLeft className="size-4" aria-hidden />
-        Kembali ke papan
+        &larr; Kembali ke papan
       </Link>
 
-      <article className="mt-4 overflow-hidden rounded-card border border-line bg-surface">
-        <div className="flex flex-wrap items-center gap-2 border-b border-line p-5 sm:p-6">
-          <BadgeKategori kategori={bantuan.category} />
-          <BadgeStatus status={bantuan.status} />
-        </div>
-
+      <article className="mt-4 rounded-card border border-line bg-surface">
         <div className="p-5 sm:p-6">
-          <h1 className="font-display text-2xl leading-tight font-extrabold text-balance text-ink">
+          <div className="flex items-center justify-between gap-3">
+            <BadgeKategori kategori={bantuan.category} />
+            <BadgeStatus status={bantuan.status} />
+          </div>
+
+          <h1 className="mt-3 font-display text-2xl leading-tight font-extrabold text-balance text-ink">
             {bantuan.title}
           </h1>
 
           <p className="mt-2 text-sm text-ink-muted">
-            Diposting{' '}
-            <span className="font-semibold text-stone-700">{bantuan.pemilik?.nama ?? 'warga'}</span>{' '}
-            &middot; <time dateTime={bantuan.created_at}>{tanggalLengkap(bantuan.created_at)}</time>
+            {bantuan.pemilik?.nama ?? 'Warga'} &middot;{' '}
+            <time dateTime={bantuan.created_at}>{tanggalLengkap(bantuan.created_at)}</time>
           </p>
 
           {/* whitespace-pre-line: paragraf yang diketik user tetap kepisah.
               Isinya dirender sebagai teks biasa, nggak pernah sebagai HTML. */}
-          <p className="mt-5 leading-relaxed whitespace-pre-line text-stone-700">
-            {bantuan.description}
-          </p>
+          <p className="mt-5 leading-relaxed whitespace-pre-line text-ink">{bantuan.description}</p>
 
-          <dl className="mt-6 space-y-3 rounded-lg bg-stone-50 p-4 text-sm">
-            <div className="flex items-start gap-2.5">
-              <MapPin className="mt-0.5 size-4 shrink-0 text-stone-400" aria-hidden />
-              <div>
-                <dt className="font-semibold text-stone-700">Lokasi</dt>
-                <dd className="text-ink-muted">{bantuan.location}</dd>
-              </div>
+          <dl className="mt-6 space-y-3 rounded-lg bg-primary-soft p-4 text-sm">
+            <div>
+              <dt className="font-semibold text-ink">Lokasi</dt>
+              <dd className="text-ink-muted">{bantuan.location}</dd>
             </div>
 
             {bantuan.status === 'selesai' && (
-              <div className="flex items-start gap-2.5">
-                <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden />
-                <div>
-                  <dt className="font-semibold text-stone-700">Sudah dibantu</dt>
-                  <dd className="text-ink-muted">
-                    {bantuan.penolong?.nama ?? 'Seorang warga'}
-                    {bantuan.helped_at && <> &middot; {waktuRelatif(bantuan.helped_at)}</>}
-                  </dd>
-                </div>
+              <div>
+                <dt className="font-semibold text-ink">Dibantu oleh</dt>
+                <dd className="text-ink-muted">
+                  {bantuan.penolong?.nama ?? 'Seorang warga'}
+                  {bantuan.helped_at && <> &middot; {waktuRelatif(bantuan.helped_at)}</>}
+                </dd>
               </div>
             )}
           </dl>
         </div>
 
-        <div className="border-t border-line bg-stone-50 p-5 sm:p-6">
+        <div className="border-t border-line p-5 sm:p-6">
           {bantuan.status === 'selesai' ? (
-            <p className="flex items-center gap-2 text-sm font-semibold text-primary">
-              <CheckCircle2 className="size-5" aria-hidden />
+            <p className="text-sm font-semibold text-primary">
               Permintaan ini sudah tertangani. Terima kasih sudah saling jaga.
             </p>
           ) : milikSendiri ? (
@@ -114,7 +85,7 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
             </div>
           ) : bolehBantu ? (
             <>
-              <p className="mb-3 text-sm text-stone-700">
+              <p className="mb-3 text-sm text-ink">
                 Bisa bantu? Tekan tombol di bawah, permintaan ini langsung ditandai selesai atas
                 namamu.
               </p>
@@ -122,7 +93,6 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
             </>
           ) : (
             <div className="flex flex-wrap items-center gap-3">
-              <User className="size-5 text-stone-400" aria-hidden />
               <p className="text-sm text-ink-muted">Masuk dulu untuk bisa menawarkan bantuan.</p>
               <Link
                 href={`/login?lanjut=/bantuan/${bantuan.id}`}

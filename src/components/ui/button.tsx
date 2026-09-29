@@ -6,12 +6,12 @@ type Ukuran = 'md' | 'sm'
 const VARIAN: Record<Varian, string> = {
   primary: 'bg-primary text-white hover:bg-primary-hover focus-visible:outline-primary',
   secondary:
-    'bg-surface text-ink border border-line hover:bg-stone-100 focus-visible:outline-primary',
+    'bg-surface text-ink border border-line hover:bg-primary-soft focus-visible:outline-primary',
   ghost: 'text-primary hover:bg-primary-soft focus-visible:outline-primary',
-  danger: 'text-danger border border-red-200 hover:bg-red-50 focus-visible:outline-danger',
+  danger: 'text-danger border border-danger/30 hover:bg-danger/5 focus-visible:outline-danger',
 }
 
-// min-h 44px: target sentuh di HP. Ikon boleh 18px, paddingnya yang menggenapi.
+// min-h 44px: target sentuh di HP.
 const UKURAN: Record<Ukuran, string> = {
   md: 'min-h-11 px-5 text-[0.9375rem]',
   sm: 'min-h-9 px-3 text-sm',

@@ -11,12 +11,12 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 - Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya.
 - Halaman detail dengan tombol "Saya Ingin Membantu" yang mengubah status jadi selesai.
 - Halaman "Bantuan Saya": riwayat permintaan sendiri, lengkap dengan hapus (pakai konfirmasi).
-- Responsif: satu kolom di HP dengan navigasi bawah, dua kolom mulai tablet.
+- Responsif: sidebar tetap di kiri pada layar lebar, berubah jadi laci lewat tombol Menu di HP.
 - Skeleton saat memuat, layar kosong ber-ajakan, layar error dengan tombol coba lagi, dan penanda saat koneksi putus.
 
 ## Kategori & status
 
-Empat kategori: **Medis & Darurat**, **Sembako**, **Peminjaman Alat**, dan **Tenaga Relawan**. Tiap kategori punya warna strip sendiri di atas kartunya, jadi satu layar penuh bisa dipindai sekilas tanpa membaca badge satu per satu. Warnanya tidak pernah sendirian, selalu ditemani ikon dan tulisan.
+Empat kategori: **Medis & Darurat**, **Sembako**, **Peminjaman Alat**, dan **Tenaga Relawan**. Tampilannya sengaja satu warna (coklat) dengan netral hangat, dan kategori dibedakan lewat tulisan, bukan warna.
 
 Statusnya dua: **Menunggu** dan **Selesai**. Sebuah permintaan pindah ke Selesai begitu ada warga lain yang menekan tombol bantu.
 
@@ -75,7 +75,7 @@ src/
 
 ## Beberapa keputusan teknis
 
-**Server dulu, client kalau perlu.** Halaman papan, detail, dan riwayat semuanya Server Component: datanya diambil di server, browser terima HTML yang sudah jadi. Yang jadi Client Component cuma daun yang memang butuh interaksi, seperti tombol bantu, tombol hapus, form, dan navigasi bawah.
+**Server dulu, client kalau perlu.** Halaman papan, detail, dan riwayat semuanya Server Component: datanya diambil di server, browser terima HTML yang sudah jadi. Yang jadi Client Component cuma daun yang memang butuh interaksi, seperti tombol bantu, tombol hapus, form, dan sidebar (yang perlu tahu halaman aktif).
 
 **Filter kategori lewat URL, bukan state.** Tombol filternya `<Link>` biasa, jadi pilihan kategori ikut di alamat (bisa di-share, tombol back jalan) dan nol JavaScript tambahan.
 

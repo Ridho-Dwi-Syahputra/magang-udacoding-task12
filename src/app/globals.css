@@ -1,55 +1,28 @@
 @import "tailwindcss";
 
 /*
-  Dua lapis token (mentah -> semantik). Komponen cuma nyebut peran warnanya,
-  jadi kalau suatu saat palet diganti, yang disentuh cuma file ini.
-
-  Arah visualnya: papan pengumuman RT. Latar kertas hangat, aksen hijau-tosca
-  yang biasa dipakai papan kelurahan/posyandu, bukan biru dashboard.
+  Satu warna: coklat. Sisanya netral hangat (kertas, garis, teks), jadi
+  tampilannya tenang dan nggak ada yang rebutan perhatian.
+  Komponen cuma nyebut peran warna, ganti palet cukup di file ini.
 */
 @theme {
-  /* --- lapis 1: nilai mentah --- */
-  --color-teal-50: #f0fdfa;
-  --color-teal-100: #ccfbf1;
-  --color-teal-200: #99f6e4;
-  --color-teal-600: #0d9488;
-  --color-teal-700: #0f766e;
-  --color-teal-800: #115e59;
-  --color-teal-900: #134e4a;
+  --color-primary: #6b4a34;
+  --color-primary-hover: #553a29;
+  --color-primary-soft: #f3ece5;
 
-  --color-paper: #f7f6f3;
-  --color-stone-50: #fafaf9;
-  --color-stone-100: #f5f5f4;
-  --color-stone-200: #e7e5e4;
-  --color-stone-300: #d6d3d1;
-  --color-stone-400: #a8a29e;
-  --color-stone-500: #78716c;
-  --color-stone-600: #57534e;
-  --color-stone-700: #44403c;
-  --color-stone-900: #1c1917;
-
-  /* --- lapis 2: peran --- */
-  --color-primary: var(--color-teal-700);
-  --color-primary-hover: var(--color-teal-800);
-  --color-primary-soft: var(--color-teal-50);
+  --color-bg: #faf8f5;
   --color-surface: #ffffff;
-  --color-bg: var(--color-paper);
-  --color-ink: var(--color-stone-900);
-  --color-ink-muted: var(--color-stone-500);
-  --color-line: var(--color-stone-200);
-  --color-danger: #b91c1c;
+  --color-line: #e8e1d9;
+  --color-ink: #2a211b;
+  --color-ink-muted: #7b6e64;
 
-  /* Warna kategori: dipakai buat strip di atas kartu supaya papan bisa
-     dipindai sekilas. Warna nggak pernah sendirian -- selalu ada ikon + teks. */
-  --color-kat-medis: #b91c1c;
-  --color-kat-sembako: #b45309;
-  --color-kat-alat: #1d4ed8;
-  --color-kat-relawan: #0f766e;
+  /* Dipakai cuma buat pesan gagal & aksi hapus. Masih di rumpun coklat-karat. */
+  --color-danger: #9a3412;
 
   --font-display: var(--font-manrope), system-ui, sans-serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
 
-  --radius-card: 0.75rem;
+  --radius-card: 0.625rem;
 }
 
 body {
@@ -58,7 +31,7 @@ body {
   font-family: var(--font-sans);
 }
 
-/* Angka (jumlah bantuan, tanggal) nggak bikin layout goyang pas berubah. */
+/* Angka (jumlah, tanggal) nggak bikin layout goyang pas berubah. */
 .tabular {
   font-variant-numeric: tabular-nums;
 }

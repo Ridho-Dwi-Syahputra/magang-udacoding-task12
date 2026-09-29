@@ -1,30 +1,18 @@
-import { CheckCircle2, Clock } from 'lucide-react'
-import { INFO_KATEGORI, LABEL_STATUS, type Kategori, type Status } from '@/lib/constants'
+import { LABEL_KATEGORI, LABEL_STATUS, type Kategori, type Status } from '@/lib/constants'
 
 export function BadgeKategori({ kategori }: { kategori: Kategori }) {
-  const { label, ikon: Ikon, teks, latar } = INFO_KATEGORI[kategori]
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold ${latar} ${teks}`}
-    >
-      <Ikon className="size-3.5" aria-hidden />
-      {label}
-    </span>
-  )
+  return <span className="text-xs font-semibold text-ink-muted">{LABEL_KATEGORI[kategori]}</span>
 }
 
-/* Warna nggak pernah jadi satu-satunya pembawa arti -- tiap badge bawa ikon
-   dan teks, jadi tetap kebaca buat yang buta warna. */
+/* Beda status kelihatan dari isi vs garis, bukan dari warna lain. */
 export function BadgeStatus({ status }: { status: Status }) {
   const selesai = status === 'selesai'
-  const Ikon = selesai ? CheckCircle2 : Clock
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-semibold ${
-        selesai ? 'bg-teal-100 text-teal-800' : 'bg-stone-100 text-stone-600'
+      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        selesai ? 'bg-primary text-white' : 'border border-line text-ink-muted'
       }`}
     >
-      <Ikon className="size-3.5" aria-hidden />
       {LABEL_STATUS[status]}
     </span>
   )

@@ -5,10 +5,10 @@ import { SkeletonKartu } from '@/components/ui/states'
 export default function Loading() {
   return (
     <div>
-      <div className="mb-5 h-9 w-56 animate-pulse rounded bg-stone-200" />
+      <div className="mb-5 h-9 w-56 animate-pulse rounded bg-line" />
       <div className="flex gap-2">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-9 w-28 animate-pulse rounded-full bg-stone-200" />
+          <div key={i} className="h-9 w-28 animate-pulse rounded-full bg-line" />
         ))}
       </div>
       <ul className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">

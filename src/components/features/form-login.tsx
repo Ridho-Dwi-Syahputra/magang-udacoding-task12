@@ -1,7 +1,6 @@
 'use client'
 
 import { useActionState } from 'react'
-import { AlertCircle, LogIn } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Field, kelasInput } from '@/components/ui/field'
 import { login, type StatusForm } from '@/lib/actions/auth'
@@ -17,11 +16,7 @@ export function FormLogin({ lanjut, galat }: { lanjut: string; galat?: string })
       <input type="hidden" name="lanjut" value={lanjut} />
 
       {pesan && (
-        <p
-          role="alert"
-          className="mb-4 flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-danger"
-        >
-          <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
+        <p role="alert" className="mb-4 rounded-lg border border-danger/30 p-3 text-sm text-danger">
           {pesan}
         </p>
       )}
@@ -46,13 +41,11 @@ export function FormLogin({ lanjut, galat }: { lanjut: string; galat?: string })
           type="password"
           required
           autoComplete="current-password"
-          placeholder="••••••••"
           className={kelasInput()}
         />
       </Field>
 
       <Button type="submit" memproses={memproses} labelProses="Masuk..." className="mt-2 w-full">
-        <LogIn className="size-4" aria-hidden />
         Masuk
       </Button>
     </form>

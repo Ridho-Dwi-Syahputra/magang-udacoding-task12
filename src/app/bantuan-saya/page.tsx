@@ -1,40 +1,26 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { MapPin } from 'lucide-react'
 import { BadgeKategori, BadgeStatus } from '@/components/ui/badge'
 import { TombolHapus } from '@/components/features/tombol-hapus'
 import { EmptyState } from '@/components/ui/states'
-import { INFO_KATEGORI } from '@/lib/constants'
 import { waktuRelatif } from '@/lib/format'
-import { supabaseServer } from '@/lib/supabase/server'
-import { KOLOM_BANTUAN, type BantuanDenganProfil } from '@/lib/types'
+import { bantuanMilik, sesiSekarang } from '@/lib/repo'
 
 export const metadata: Metadata = { title: 'Bantuan Saya' }
 
 export default async function BantuanSayaPage() {
-  const supabase = await supabaseServer()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const user = await sesiSekarang()
 
-  // Middleware sudah nendang tamu dari sini. Pengecekan ini jaring kedua,
+  // Proxy sudah nendang tamu dari sini. Pengecekan ini jaring kedua,
   // sekalian bikin TypeScript yakin user-nya nggak null di bawah.
   if (!user) redirect('/login?lanjut=/bantuan-saya')
 
-  const { data, error } = await supabase
-    .from('help_requests')
-    .select(KOLOM_BANTUAN)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-
-  if (error) throw new Error(`Gagal memuat riwayat: ${error.message}`)
-
-  const daftar = (data ?? []) as unknown as BantuanDenganProfil[]
+  const daftar = await bantuanMilik(user.id)
   const menunggu = daftar.filter((b) => b.status === 'menunggu').length
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">Bantuan Saya</h1>
       <p className="mt-1 mb-6 text-sm text-ink-muted">
         {daftar.length === 0
@@ -51,37 +37,28 @@ export default async function BantuanSayaPage() {
       ) : (
         <ul className="space-y-3">
           {daftar.map((bantuan) => (
-            <li
-              key={bantuan.id}
-              className="overflow-hidden rounded-card border border-line bg-surface"
-            >
-              <div className={`h-1.5 ${INFO_KATEGORI[bantuan.category].strip}`} aria-hidden />
-              <div className="p-4 sm:p-5">
-                <div className="flex flex-wrap items-center gap-2">
-                  <BadgeKategori kategori={bantuan.category} />
-                  <BadgeStatus status={bantuan.status} />
-                </div>
+            <li key={bantuan.id} className="rounded-card border border-line bg-surface p-4 sm:p-5">
+              <div className="flex items-center justify-between gap-3">
+                <BadgeKategori kategori={bantuan.category} />
+                <BadgeStatus status={bantuan.status} />
+              </div>
 
-                <h2 className="mt-2.5 font-display leading-snug font-bold text-ink">
-                  <Link href={`/bantuan/${bantuan.id}`} className="hover:text-primary">
-                    {bantuan.title}
-                  </Link>
-                </h2>
+              <h2 className="mt-2.5 font-display leading-snug font-bold text-ink">
+                <Link href={`/bantuan/${bantuan.id}`} className="hover:text-primary">
+                  {bantuan.title}
+                </Link>
+              </h2>
 
-                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-muted">
-                  <MapPin className="size-4 shrink-0" aria-hidden />
-                  <span className="line-clamp-1">{bantuan.location}</span>
+              <p className="mt-1.5 line-clamp-1 text-sm text-ink-muted">{bantuan.location}</p>
+
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
+                <p className="text-xs text-ink-muted">
+                  <span className="tabular">{waktuRelatif(bantuan.created_at)}</span>
+                  {bantuan.status === 'selesai' && (
+                    <> &middot; dibantu {bantuan.penolong?.nama ?? 'warga'}</>
+                  )}
                 </p>
-
-                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
-                  <p className="text-xs text-ink-muted">
-                    <span className="tabular">{waktuRelatif(bantuan.created_at)}</span>
-                    {bantuan.status === 'selesai' && (
-                      <> &middot; dibantu {bantuan.penolong?.nama ?? 'warga'}</>
-                    )}
-                  </p>
-                  <TombolHapus id={bantuan.id} judul={bantuan.title} />
-                </div>
+                <TombolHapus id={bantuan.id} judul={bantuan.title} />
               </div>
             </li>
           ))}

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FormLogin } from '@/components/features/form-login'
 import { TombolGoogle } from '@/components/features/tombol-google'
+import { modeDummy } from '@/lib/env'
 
 export const metadata: Metadata = { title: 'Masuk' }
 
@@ -21,13 +22,19 @@ export default async function LoginPage({ searchParams }: PageProps<'/login'>) {
       <div className="rounded-card border border-line bg-surface p-5 sm:p-6">
         <FormLogin lanjut={tujuan} galat={pesanGalat} />
 
-        <div className="my-5 flex items-center gap-3 text-xs font-semibold text-stone-400">
-          <span className="h-px flex-1 bg-line" />
-          ATAU
-          <span className="h-px flex-1 bg-line" />
-        </div>
+        {/* Google butuh Supabase, jadi di mode dummy nggak ditampilkan
+            daripada muncul tombol yang pasti gagal. */}
+        {!modeDummy() && (
+          <>
+            <div className="my-5 flex items-center gap-3 text-xs font-semibold text-ink-muted">
+              <span className="h-px flex-1 bg-line" />
+              ATAU
+              <span className="h-px flex-1 bg-line" />
+            </div>
 
-        <TombolGoogle lanjut={tujuan} />
+            <TombolGoogle lanjut={tujuan} />
+          </>
+        )}
       </div>
 
       <p className="mt-5 text-center text-sm text-ink-muted">

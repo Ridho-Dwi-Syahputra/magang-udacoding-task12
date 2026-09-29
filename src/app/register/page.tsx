@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FormRegister } from '@/components/features/form-register'
 import { TombolGoogle } from '@/components/features/tombol-google'
+import { modeDummy } from '@/lib/env'
 
 export const metadata: Metadata = { title: 'Daftar' }
 
@@ -16,13 +17,17 @@ export default function RegisterPage() {
       <div className="rounded-card border border-line bg-surface p-5 sm:p-6">
         <FormRegister />
 
-        <div className="my-5 flex items-center gap-3 text-xs font-semibold text-stone-400">
-          <span className="h-px flex-1 bg-line" />
-          ATAU
-          <span className="h-px flex-1 bg-line" />
-        </div>
+        {!modeDummy() && (
+          <>
+            <div className="my-5 flex items-center gap-3 text-xs font-semibold text-ink-muted">
+              <span className="h-px flex-1 bg-line" />
+              ATAU
+              <span className="h-px flex-1 bg-line" />
+            </div>
 
-        <TombolGoogle lanjut="/bantuan" />
+            <TombolGoogle lanjut="/bantuan" />
+          </>
+        )}
       </div>
 
       <p className="mt-5 text-center text-sm text-ink-muted">

@@ -2,7 +2,6 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import { Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { hapusBantuan } from '@/lib/actions/bantuan'
 
@@ -33,7 +32,6 @@ export function TombolHapus({ id, judul }: { id: string; judul: string }) {
     return (
       <div>
         <Button varian="danger" ukuran="sm" onClick={() => setKonfirmasi(true)}>
-          <Trash2 className="size-4" aria-hidden />
           Hapus
         </Button>
         {error && (
@@ -46,8 +44,8 @@ export function TombolHapus({ id, judul }: { id: string; judul: string }) {
   }
 
   return (
-    <div className="rounded-lg border border-red-200 bg-red-50 p-3">
-      <p className="text-sm text-stone-700">
+    <div className="rounded-lg border border-danger/30 p-3">
+      <p className="text-sm text-ink">
         Hapus permintaan &ldquo;<span className="font-semibold">{judul}</span>&rdquo;? Tindakan ini
         tidak bisa dibatalkan.
       </p>

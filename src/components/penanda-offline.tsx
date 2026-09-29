@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { WifiOff } from 'lucide-react'
 
 /*
   Tanpa ini, koneksi putus kelihatan sama persis dengan aplikasi yang error:
@@ -28,11 +27,7 @@ export function PenandaOffline() {
   if (!offline) return null
 
   return (
-    <p
-      role="status"
-      className="flex items-center justify-center gap-2 bg-stone-900 px-4 py-2 text-center text-sm font-semibold text-white"
-    >
-      <WifiOff className="size-4 shrink-0" aria-hidden />
+    <p role="status" className="bg-ink px-4 py-2 text-center text-sm font-semibold text-white">
       Koneksi terputus. Data yang tampil mungkin sudah tidak terbaru.
     </p>
   )

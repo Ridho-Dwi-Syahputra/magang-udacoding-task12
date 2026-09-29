@@ -2,8 +2,8 @@
 
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
-import { supabaseServer } from '@/lib/supabase/server'
 import { BATAS_DESKRIPSI, BATAS_JUDUL, BATAS_LOKASI, isKategori } from '@/lib/constants'
+import { hapusMilik, selesaikanBantuan, sesiSekarang, simpanBantuan } from '@/lib/repo'
 
 export type StatusBantuan = {
   error?: string
@@ -36,48 +36,25 @@ export async function buatBantuan(
   if (location.length < 3) field.location = 'Tulis lokasinya, minimal 3 huruf.'
   else if (location.length > BATAS_LOKASI) field.location = `Lokasi maksimal ${BATAS_LOKASI} huruf.`
 
-  if (Object.keys(field).length > 0) return { field, nilai }
+  if (Object.keys(field).length > 0 || !isKategori(category)) return { field, nilai }
 
-  const supabase = await supabaseServer()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const sesi = await sesiSekarang()
+  if (!sesi) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.', nilai }
 
-  if (!user) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.', nilai }
-
-  const { data, error } = await supabase
-    .from('help_requests')
-    .insert({ title, description, category, location, user_id: user.id })
-    .select('id')
-    .single()
-
-  if (error) {
-    return { error: 'Permintaan gagal dikirim. Coba lagi sebentar lagi.', nilai }
-  }
+  const id = await simpanBantuan(sesi.id, { title, description, category, location })
+  if (!id) return { error: 'Permintaan gagal dikirim. Coba lagi sebentar lagi.', nilai }
 
   revalidatePath('/bantuan')
   revalidatePath('/bantuan-saya')
-  redirect(`/bantuan/${data.id}`)
+  redirect(`/bantuan/${id}`)
 }
 
 export async function tandaiSelesai(id: string) {
-  const supabase = await supabaseServer()
+  const sesi = await sesiSekarang()
+  if (!sesi) return { error: 'Login dulu sebelum menawarkan bantuan.' }
 
-  // Aksinya lewat fungsi database, bukan update langsung: di sana syaratnya
-  // ditaruh di WHERE, jadi dua relawan yang mencet barengan nggak saling timpa.
-  const { error } = await supabase.rpc('tandai_selesai', { bantuan_id: id })
-
-  if (error) {
-    // Cuma pesan yang kita tulis sendiri di fungsi database yang boleh tampil.
-    // Error lain (koneksi, sintaks, dll) isinya teknis dan nggak ada gunanya
-    // buat user -- itu cukup nyangkut di log.
-    const pesanKita = error.code === 'P0001' || error.code === '42501'
-    if (!pesanKita) console.error('tandai_selesai gagal', { id, error })
-
-    return {
-      error: pesanKita ? error.message : 'Gagal menandai bantuan ini. Coba muat ulang halamannya.',
-    }
-  }
+  const pesan = await selesaikanBantuan(sesi.id, id)
+  if (pesan) return { error: pesan }
 
   revalidatePath('/bantuan')
   revalidatePath(`/bantuan/${id}`)
@@ -86,13 +63,10 @@ export async function tandaiSelesai(id: string) {
 }
 
 export async function hapusBantuan(id: string) {
-  const supabase = await supabaseServer()
+  const sesi = await sesiSekarang()
+  if (!sesi) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.' }
 
-  // Nggak perlu ngecek pemilik di sini -- policy DELETE di Supabase yang nolak
-  // kalau bukan punyanya. Cukup dicek berapa baris yang beneran kehapus.
-  const { data, error } = await supabase.from('help_requests').delete().eq('id', id).select('id')
-
-  if (error || !data?.length) {
+  if (!(await hapusMilik(sesi.id, id))) {
     return { error: 'Gagal menghapus. Permintaan ini mungkin bukan punyamu atau sudah terhapus.' }
   }
 
