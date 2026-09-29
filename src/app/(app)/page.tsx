@@ -23,10 +23,9 @@ export default async function LandingPage() {
           </h1>
 
           <p className="mt-4 text-base leading-relaxed text-ink-muted sm:text-lg">
-            Community Help Board itu papan pengumuman warga: siapa pun bisa menempel permintaan
-            bantuan, dari donor darah sampai pinjam kursi roda, dan tetangga yang sanggup tinggal
-            angkat tangan. Papannya bisa dilihat siapa saja -- akun cuma dibutuhkan buat menempel
-            permintaan atau menawarkan bantuan.
+            Donor darah, pinjam kursi roda, cari tenaga relawan -- tempel yang kamu butuhkan, atau
+            bantu tetangga yang kesusahan. Boleh dilihat tanpa akun, masuk dulu kalau mau ikut
+            menempel atau membantu.
           </p>
 
           <div className="mt-8">

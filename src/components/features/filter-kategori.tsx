@@ -16,8 +16,12 @@ export function FilterKategori({ aktif }: { aktif: Kategori | null }) {
     }`
 
   return (
-    <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-      <div className="flex w-max gap-2 pb-1 sm:w-auto sm:flex-wrap">
+    // py di div INI (yang overflow-x-auto), bukan di anak di bawahnya --
+    // begitu satu sumbu diset overflow, browser diam-diam ikut motong sumbu
+    // satunya juga, jadi ring fokus/outline yang nongol di luar tombol
+    // kepotong kalau nggak dikasih ruang di kontainer yang overflow ini.
+    <div className="-mx-4 -my-1.5 overflow-x-auto px-4 py-1.5 sm:mx-0 sm:px-0">
+      <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
         <Link
           href="/bantuan"
           aria-current={aktif === null ? 'true' : undefined}
