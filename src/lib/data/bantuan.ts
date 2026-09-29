@@ -1,7 +1,7 @@
 import { modeDummy } from '@/lib/env'
 import { dataDummy, type BarisDummy } from '@/lib/dummy/data'
 import { supabaseServer } from '@/lib/supabase/server'
-import type { Kategori } from '@/lib/constants'
+import { URUTAN_STATUS, type Kategori, type Status } from '@/lib/constants'
 import { KOLOM_BANTUAN, type BantuanDenganProfil } from '@/lib/types'
 
 /*
@@ -9,6 +9,13 @@ import { KOLOM_BANTUAN, type BantuanDenganProfil } from '@/lib/types'
   Supabase kalau environment variable-nya ada, ke data di memori kalau
   belum (lihat lib/env.ts). Pemanggilnya (halaman, server action) nggak
   perlu tahu cabang mana yang lagi jalan.
+
+  Alur status: menunggu -> diproses -> selesai.
+  - menunggu: baru diposting, belum ada yang nawarin.
+  - diproses: relawan udah nawarin (tawarkanBantuan), nunggu pemilik
+    postingan konfirmasi beneran kelar (konfirmasiSelesai) atau batalin
+    kalau ternyata nggak kunjung dikerjain (batalkanBantuan).
+  - selesai: pemilik udah konfirmasi.
 */
 
 // ---------------------------------------------------------------- dummy
@@ -22,9 +29,12 @@ function gabung(baris: BarisDummy): BantuanDenganProfil {
   return { ...baris, pemilik: cari(baris.user_id), penolong: cari(baris.helper_id) }
 }
 
-function urut(a: BarisDummy, b: BarisDummy) {
-  // Sama seperti query Supabase: "menunggu" di atas "selesai", lalu terbaru dulu.
-  if (a.status !== b.status) return a.status < b.status ? -1 : 1
+function urut(a: { status: Status; created_at: string }, b: { status: Status; created_at: string }) {
+  // Yang masih butuh relawan naik ke atas, yang udah kelar turun ke bawah.
+  // Bukan urutan alfabetis -- makanya pakai tabel URUTAN_STATUS, bukan
+  // bandingin string status-nya langsung.
+  const rank = URUTAN_STATUS[a.status] - URUTAN_STATUS[b.status]
+  if (rank !== 0) return rank
   return b.created_at.localeCompare(a.created_at)
 }
 
@@ -39,19 +49,17 @@ export async function daftarBantuan(kategori: Kategori | null): Promise<BantuanD
   }
 
   const supabase = await supabaseServer()
-  let query = supabase
-    .from('help_requests')
-    .select(KOLOM_BANTUAN)
-    // "menunggu" < "selesai" secara alfabet, jadi yang belum tertangani
-    // otomatis naik ke atas tanpa kolom prioritas tambahan.
-    .order('status', { ascending: true })
-    .order('created_at', { ascending: false })
-    .limit(60)
+  // Diurut di JS lewat urut() di bawah, bukan .order('status') -- alfabetis
+  // "diproses" < "menunggu" < "selesai" nggak sama dengan urutan prioritas
+  // yang kita mau. Barisnya cuma dibatasi 60, jadi ngurut ulang di sini murah.
+  let query = supabase.from('help_requests').select(KOLOM_BANTUAN).order('created_at', {
+    ascending: false,
+  }).limit(60)
   if (kategori) query = query.eq('category', kategori)
 
   const { data, error } = await query
   if (error) throw new Error(`Gagal memuat papan bantuan: ${error.message}`)
-  return (data ?? []) as unknown as BantuanDenganProfil[]
+  return ((data ?? []) as unknown as BantuanDenganProfil[]).sort(urut)
 }
 
 export async function ambilBantuan(id: string): Promise<BantuanDenganProfil | null> {
@@ -128,6 +136,7 @@ export async function simpanBantuan(userId: string, isian: Isian): Promise<strin
       user_id: userId,
       helper_id: null,
       helped_at: null,
+      confirmed_at: null,
       created_at: new Date().toISOString(),
     })
     return id
@@ -142,13 +151,17 @@ export async function simpanBantuan(userId: string, isian: Isian): Promise<strin
   return error ? null : data.id
 }
 
-export async function selesaikanBantuan(userId: string, id: string): Promise<string | null> {
+/* Relawan menawarkan diri: menunggu -> diproses. Bukan langsung "selesai" --
+   pemilik postingan yang berhak mastiin bantuannya beneran kelar lewat
+   konfirmasiSelesai(), atau batalin lewat batalkanBantuan() kalau ternyata
+   nggak kunjung dikerjain. */
+export async function tawarkanBantuan(userId: string, id: string): Promise<string | null> {
   if (modeDummy()) {
     const baris = dataDummy().baris.find((b) => b.id === id)
     if (!baris || baris.status !== 'menunggu' || baris.user_id === userId) {
       return 'Permintaan ini sudah ditangani orang lain, atau ini postinganmu sendiri.'
     }
-    baris.status = 'selesai'
+    baris.status = 'diproses'
     baris.helper_id = userId
     baris.helped_at = new Date().toISOString()
     return null
@@ -157,13 +170,57 @@ export async function selesaikanBantuan(userId: string, id: string): Promise<str
   const supabase = await supabaseServer()
   // Lewat fungsi database, bukan update langsung: syaratnya ditaruh di WHERE,
   // jadi dua relawan yang mencet barengan nggak saling timpa.
-  const { error } = await supabase.rpc('tandai_selesai', { bantuan_id: id })
+  const { error } = await supabase.rpc('tawarkan_bantuan', { bantuan_id: id })
   if (!error) return null
 
   // Cuma pesan yang kita tulis sendiri di fungsi database yang boleh tampil.
   const pesanKita = error.code === 'P0001' || error.code === '42501'
-  if (!pesanKita) console.error('tandai_selesai gagal', { id, error })
-  return pesanKita ? error.message : 'Gagal menandai bantuan ini. Coba muat ulang halamannya.'
+  if (!pesanKita) console.error('tawarkan_bantuan gagal', { id, error })
+  return pesanKita ? error.message : 'Gagal menawarkan bantuan. Coba muat ulang halamannya.'
+}
+
+/* Cuma boleh dipanggil pemilik postingan. diproses -> selesai. */
+export async function konfirmasiSelesai(userId: string, id: string): Promise<string | null> {
+  if (modeDummy()) {
+    const baris = dataDummy().baris.find((b) => b.id === id)
+    if (!baris || baris.status !== 'diproses' || baris.user_id !== userId) {
+      return 'Nggak bisa dikonfirmasi. Coba muat ulang halamannya.'
+    }
+    baris.status = 'selesai'
+    baris.confirmed_at = new Date().toISOString()
+    return null
+  }
+
+  const supabase = await supabaseServer()
+  const { error } = await supabase.rpc('konfirmasi_selesai', { bantuan_id: id })
+  if (!error) return null
+
+  const pesanKita = error.code === 'P0001' || error.code === '42501'
+  if (!pesanKita) console.error('konfirmasi_selesai gagal', { id, error })
+  return pesanKita ? error.message : 'Gagal mengonfirmasi. Coba muat ulang halamannya.'
+}
+
+/* Cuma boleh dipanggil pemilik postingan. diproses -> menunggu lagi (dibuka
+   ulang), buat kasus relawannya ternyata nggak kunjung ngerjain. */
+export async function batalkanBantuan(userId: string, id: string): Promise<string | null> {
+  if (modeDummy()) {
+    const baris = dataDummy().baris.find((b) => b.id === id)
+    if (!baris || baris.status !== 'diproses' || baris.user_id !== userId) {
+      return 'Nggak bisa dibatalkan. Coba muat ulang halamannya.'
+    }
+    baris.status = 'menunggu'
+    baris.helper_id = null
+    baris.helped_at = null
+    return null
+  }
+
+  const supabase = await supabaseServer()
+  const { error } = await supabase.rpc('batalkan_bantuan', { bantuan_id: id })
+  if (!error) return null
+
+  const pesanKita = error.code === 'P0001' || error.code === '42501'
+  if (!pesanKita) console.error('batalkan_bantuan gagal', { id, error })
+  return pesanKita ? error.message : 'Gagal membatalkan. Coba muat ulang halamannya.'
 }
 
 export async function hapusMilik(userId: string, id: string): Promise<boolean> {

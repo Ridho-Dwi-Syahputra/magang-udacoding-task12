@@ -43,15 +43,25 @@ begin
      'alat', 'Jl. Gajah Mada No. 21, Padang Utara', null, null, coalesce(warga_b, warga_a), now() - interval '3 days')
   on conflict do nothing;
 
-  -- Satu contoh yang sudah kelar, biar badge "Selesai" ada isinya pas demo.
+  -- Dua contoh tambahan biar ketiga status ada isinya pas demo: satu lagi
+  -- "diproses" (ada yang nawarin, belum dikonfirmasi), satu "selesai".
   if warga_b is not null then
     insert into public.help_requests
       (title, description, category, location, latitude, longitude, status, user_id, helper_id, helped_at, created_at)
     values
+      ('Pinjam gerobak dorong buat pindahan',
+       'Mau pindah kos akhir pekan ini, butuh gerobak dorong buat angkut barang dari lantai 2. Siap jemput sendiri.',
+       'alat', 'Jl. Veteran, Kel. Purus, Padang Barat', -0.9430, 100.3550, 'diproses',
+       warga_a, warga_b, now() - interval '3 hours', now() - interval '6 hours')
+    on conflict do nothing;
+
+    insert into public.help_requests
+      (title, description, category, location, latitude, longitude, status, user_id, helper_id, helped_at, confirmed_at, created_at)
+    values
       ('Butuh tabung oksigen portabel',
        'Kakek sesak napas sejak semalam dan belum dapat rujukan rumah sakit. Sudah dibantu warga sebelah, terima kasih banyak.',
        'medis', 'RT 01 / RW 02, Kel. Alai Parak Kopi', -0.9200, 100.3620, 'selesai',
-       warga_a, warga_b, now() - interval '4 days', now() - interval '5 days')
+       warga_a, warga_b, now() - interval '4 days 1 hour', now() - interval '4 days', now() - interval '5 days')
     on conflict do nothing;
   end if;
 end $$;

@@ -3,7 +3,7 @@
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { tandaiSelesai } from '@/lib/actions/bantuan'
+import { tawarkanBantuanAction } from '@/lib/actions/bantuan'
 
 export function TombolBantu({ id }: { id: string }) {
   const [memproses, mulai] = useTransition()
@@ -13,7 +13,7 @@ export function TombolBantu({ id }: { id: string }) {
   function handleBantu() {
     setError(null)
     mulai(async () => {
-      const hasil = await tandaiSelesai(id)
+      const hasil = await tawarkanBantuanAction(id)
       // Kalau gagal gara-gara keduluan orang lain, halamannya tetap disegarin
       // supaya user langsung lihat kondisi terbaru, bukan cuma baca pesan error.
       if (hasil.error) setError(hasil.error)

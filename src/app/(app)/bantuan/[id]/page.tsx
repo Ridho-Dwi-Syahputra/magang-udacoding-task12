@@ -6,6 +6,7 @@ import { gayaTombol } from '@/components/ui/button'
 import { PetaLokasi } from '@/components/features/peta-lokasi'
 import { TombolBantu } from '@/components/features/tombol-bantu'
 import { TombolHapus } from '@/components/features/tombol-hapus'
+import { TombolKonfirmasi } from '@/components/features/tombol-konfirmasi'
 import { ambilBantuan } from '@/lib/data/bantuan'
 import { sesiSekarang } from '@/lib/data/sesi'
 import { tanggalLengkap, waktuRelatif } from '@/lib/format'
@@ -24,6 +25,7 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
   if (!bantuan) notFound()
 
   const milikSendiri = user?.id === bantuan.user_id
+  const akuPenolong = user?.id === bantuan.helper_id
   const bolehBantu = Boolean(user) && !milikSendiri && bantuan.status === 'menunggu'
 
   return (
@@ -61,9 +63,13 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
               <dd className="text-ink-muted">{bantuan.location}</dd>
             </div>
 
-            {bantuan.status === 'selesai' && (
+            {/* Tampil begitu ada yang nawarin, bukan nunggu sampai konfirmasi
+                kelar -- pemilik postingan berhak tahu siapa yang lagi ngerjain. */}
+            {(bantuan.status === 'diproses' || bantuan.status === 'selesai') && (
               <div>
-                <dt className="font-semibold text-ink">Dibantu oleh</dt>
+                <dt className="font-semibold text-ink">
+                  {bantuan.status === 'selesai' ? 'Dibantu oleh' : 'Ditawarkan oleh'}
+                </dt>
                 <dd className="text-ink-muted">
                   {bantuan.penolong?.nama ?? 'Seorang warga'}
                   {bantuan.helped_at && <> &middot; {waktuRelatif(bantuan.helped_at)}</>}
@@ -82,8 +88,29 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
         <div className="border-t border-line p-5 sm:p-6">
           {bantuan.status === 'selesai' ? (
             <p className="text-sm font-semibold text-primary">
-              Permintaan ini sudah tertangani. Terima kasih sudah saling jaga.
+              Permintaan ini sudah dikonfirmasi selesai oleh {bantuan.pemilik?.nama ?? 'pemiliknya'}.
+              Terima kasih sudah saling jaga.
             </p>
+          ) : bantuan.status === 'diproses' ? (
+            milikSendiri ? (
+              <>
+                <p className="mb-3 text-sm text-ink">
+                  <span className="font-semibold">{bantuan.penolong?.nama ?? 'Seorang warga'}</span>{' '}
+                  menawarkan bantuan. Sudah beneran kelar, atau batalin kalau ternyata belum
+                  dikerjain?
+                </p>
+                <TombolKonfirmasi id={bantuan.id} />
+              </>
+            ) : akuPenolong ? (
+              <p className="text-sm text-ink-muted">
+                Kamu sudah menawarkan bantuan untuk ini. Menunggu {bantuan.pemilik?.nama ?? 'pemiliknya'}{' '}
+                mengonfirmasi.
+              </p>
+            ) : (
+              <p className="text-sm text-ink-muted">
+                Permintaan ini sedang ditangani warga lain, menunggu dikonfirmasi.
+              </p>
+            )
           ) : milikSendiri ? (
             <div className="flex flex-wrap items-center justify-between gap-3">
               <p className="text-sm text-ink-muted">
@@ -94,8 +121,8 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
           ) : bolehBantu ? (
             <>
               <p className="mb-3 text-sm text-ink">
-                Bisa bantu? Tekan tombol di bawah, permintaan ini langsung ditandai selesai atas
-                namamu.
+                Bisa bantu? Tekan tombol di bawah untuk menawarkan diri. Statusnya jadi
+                &ldquo;Diproses&rdquo; sampai {bantuan.pemilik?.nama ?? 'pemiliknya'} mengonfirmasi.
               </p>
               <TombolBantu id={bantuan.id} />
             </>

@@ -3,7 +3,13 @@
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import type { Kategori } from '@/lib/constants'
-import { hapusMilik, selesaikanBantuan, simpanBantuan } from '@/lib/data/bantuan'
+import {
+  batalkanBantuan,
+  hapusMilik,
+  konfirmasiSelesai,
+  simpanBantuan,
+  tawarkanBantuan,
+} from '@/lib/data/bantuan'
 import { sesiSekarang } from '@/lib/data/sesi'
 import { bacaKoordinat, validasiBantuan } from '@/lib/validasi/bantuan'
 
@@ -68,11 +74,42 @@ export async function buatBantuan(
   redirect(`/bantuan/${id}`)
 }
 
-export async function tandaiSelesai(id: string) {
+/* Relawan menawarkan diri. Status jadi "diproses", BUKAN langsung "selesai" --
+   pemilik postingan yang berhak mastiin lewat konfirmasiSelesaiAction(). */
+export async function tawarkanBantuanAction(id: string) {
   const sesi = await sesiSekarang()
   if (!sesi) return { error: 'Login dulu sebelum menawarkan bantuan.' }
 
-  const pesan = await selesaikanBantuan(sesi.id, id)
+  const pesan = await tawarkanBantuan(sesi.id, id)
+  if (pesan) return { error: pesan }
+
+  revalidatePath('/bantuan')
+  revalidatePath(`/bantuan/${id}`)
+  revalidatePath('/bantuan-saya')
+  return { sukses: true as const }
+}
+
+/* Cuma pemilik postingan yang boleh manggil ini (dicek juga di data layer). */
+export async function konfirmasiSelesaiAction(id: string) {
+  const sesi = await sesiSekarang()
+  if (!sesi) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.' }
+
+  const pesan = await konfirmasiSelesai(sesi.id, id)
+  if (pesan) return { error: pesan }
+
+  revalidatePath('/bantuan')
+  revalidatePath(`/bantuan/${id}`)
+  revalidatePath('/bantuan-saya')
+  return { sukses: true as const }
+}
+
+/* Pemilik postingan batalin tawaran yang lagi diproses -- misalnya relawannya
+   nggak kunjung ngerjain. Dibuka lagi jadi "menunggu". */
+export async function batalkanBantuanAction(id: string) {
+  const sesi = await sesiSekarang()
+  if (!sesi) return { error: 'Sesi kamu sudah habis. Masuk lagi dulu ya.' }
+
+  const pesan = await batalkanBantuan(sesi.id, id)
   if (pesan) return { error: pesan }
 
   revalidatePath('/bantuan')

@@ -60,17 +60,23 @@ create table if not exists public.help_requests (
   -- Permintaan yang lokasinya diketik manual nilainya tetap null, dan itu sah.
   latitude    double precision,
   longitude   double precision,
-  status      text not null default 'menunggu' check (status in ('menunggu', 'selesai')),
+  -- diproses: relawan udah nawarin, nunggu pemilik postingan konfirmasi.
+  status      text not null default 'menunggu' check (status in ('menunggu', 'diproses', 'selesai')),
   user_id     uuid not null references public.profiles(id) on delete cascade,
   helper_id   uuid references public.profiles(id) on delete set null,
+  -- Kapan relawan menawarkan diri (status jadi "diproses").
   helped_at   timestamptz,
+  -- Kapan PEMILIK postingan mengonfirmasi bantuannya beneran kelar. Cuma
+  -- keisi kalau status "selesai" -- itu yang bedain "diproses" vs "selesai".
+  confirmed_at timestamptz,
   created_at  timestamptz not null default now(),
 
-  -- Status selesai tanpa penolong itu data setengah jadi. Dijaga di database,
-  -- bukan cuma di form, karena database yang jadi sumber kebenarannya.
+  -- Tiap status punya kombinasi kolom yang sah masing-masing. Dijaga di
+  -- database, bukan cuma di form, karena database yang jadi sumber kebenarannya.
   constraint penolong_sejalan_dengan_status check (
-    (status = 'menunggu' and helper_id is null and helped_at is null)
-    or (status = 'selesai' and helper_id is not null and helped_at is not null)
+    (status = 'menunggu' and helper_id is null and helped_at is null and confirmed_at is null)
+    or (status = 'diproses' and helper_id is not null and helped_at is not null and confirmed_at is null)
+    or (status = 'selesai' and helper_id is not null and helped_at is not null and confirmed_at is not null)
   ),
   constraint tidak_bantu_diri_sendiri check (helper_id is null or helper_id <> user_id),
 
@@ -145,17 +151,21 @@ create policy "pemilik hapus postingannya"
   using (auth.uid() = user_id);
 
 -- ---------------------------------------------------------------------------
--- 4. Aksi "Saya Ingin Membantu"
+-- 4. Alur bantuan: tawarkan -> konfirmasi / batalkan
 -- ---------------------------------------------------------------------------
--- Relawan perlu ngubah postingan orang lain, tapi cuma satu kolom: status.
--- Kebijakan UPDATE nggak bisa ngunci per-kolom, jadi aksinya dibungkus fungsi
--- ini dan nggak ada policy UPDATE buat orang lain sama sekali.
+-- Relawan perlu ngubah postingan orang lain, tapi cuma kolom tertentu, dan
+-- pemilik postingan perlu ngonfirmasi tawaran itu. Kebijakan UPDATE nggak
+-- bisa ngunci per-kolom ATAU per-baris-ganti-baris kayak gini, jadi ketiga
+-- aksinya dibungkus fungsi dan nggak ada policy UPDATE buat pihak lain
+-- selain pemilik sama sekali (lihat "pemilik ubah postingannya" di atas).
 --
--- Syaratnya ditaruh di WHERE, bukan di IF sebelumnya. Bedanya kelihatan pas
--- dua relawan mencet tombol barengan: yang kedua nggak nemu baris berstatus
--- "menunggu" lagi, jadi kalah dengan sopan alih-alih nimpa penolong pertama.
+-- Syaratnya selalu ditaruh di WHERE, bukan di IF sebelumnya. Bedanya kelihatan
+-- pas dua relawan mencet tombol barengan: yang kedua nggak nemu baris
+-- berstatus "menunggu" lagi, jadi kalah dengan sopan alih-alih nimpa
+-- penolong pertama.
 
-create or replace function public.tandai_selesai(bantuan_id uuid)
+-- menunggu -> diproses. Siapa aja (kecuali pemiliknya sendiri) boleh nawarin.
+create or replace function public.tawarkan_bantuan(bantuan_id uuid)
 returns public.help_requests
 language plpgsql
 security definer
@@ -169,7 +179,7 @@ begin
   end if;
 
   update public.help_requests
-     set status    = 'selesai',
+     set status    = 'diproses',
          helper_id = auth.uid(),
          helped_at = now()
    where id = bantuan_id
@@ -186,5 +196,73 @@ begin
 end;
 $$;
 
-revoke all on function public.tandai_selesai(uuid) from public, anon;
-grant execute on function public.tandai_selesai(uuid) to authenticated;
+revoke all on function public.tawarkan_bantuan(uuid) from public, anon;
+grant execute on function public.tawarkan_bantuan(uuid) to authenticated;
+
+-- diproses -> selesai. Cuma PEMILIK postingan yang boleh konfirmasi.
+create or replace function public.konfirmasi_selesai(bantuan_id uuid)
+returns public.help_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  hasil public.help_requests;
+begin
+  if auth.uid() is null then
+    raise exception 'Login dulu.' using errcode = '42501';
+  end if;
+
+  update public.help_requests
+     set status = 'selesai',
+         confirmed_at = now()
+   where id = bantuan_id
+     and status = 'diproses'
+     and user_id = auth.uid()
+  returning * into hasil;
+
+  if not found then
+    raise exception 'Nggak bisa dikonfirmasi. Coba muat ulang halamannya.' using errcode = 'P0001';
+  end if;
+
+  return hasil;
+end;
+$$;
+
+revoke all on function public.konfirmasi_selesai(uuid) from public, anon;
+grant execute on function public.konfirmasi_selesai(uuid) to authenticated;
+
+-- diproses -> menunggu lagi. Cuma PEMILIK postingan, buat kasus relawannya
+-- ternyata nggak kunjung ngerjain -- dibuka ulang biar relawan lain bisa nawarin.
+create or replace function public.batalkan_bantuan(bantuan_id uuid)
+returns public.help_requests
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  hasil public.help_requests;
+begin
+  if auth.uid() is null then
+    raise exception 'Login dulu.' using errcode = '42501';
+  end if;
+
+  update public.help_requests
+     set status = 'menunggu',
+         helper_id = null,
+         helped_at = null
+   where id = bantuan_id
+     and status = 'diproses'
+     and user_id = auth.uid()
+  returning * into hasil;
+
+  if not found then
+    raise exception 'Nggak bisa dibatalkan. Coba muat ulang halamannya.' using errcode = 'P0001';
+  end if;
+
+  return hasil;
+end;
+$$;
+
+revoke all on function public.batalkan_bantuan(uuid) from public, anon;
+grant execute on function public.batalkan_bantuan(uuid) to authenticated;

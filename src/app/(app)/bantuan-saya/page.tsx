@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { BadgeKategori, BadgeStatus } from '@/components/ui/badge'
 import { TombolHapus } from '@/components/features/tombol-hapus'
+import { TombolKonfirmasi } from '@/components/features/tombol-konfirmasi'
 import { EmptyState } from '@/components/ui/states'
 import { bantuanMilik } from '@/lib/data/bantuan'
 import { sesiSekarang } from '@/lib/data/sesi'
@@ -52,14 +53,23 @@ export default async function BantuanSayaPage() {
 
               <p className="mt-1.5 line-clamp-1 text-sm text-ink-muted">{bantuan.location}</p>
 
+              {/* Tampil begitu ada yang nawarin, bukan nunggu dikonfirmasi. */}
+              {(bantuan.status === 'diproses' || bantuan.status === 'selesai') && (
+                <p className="mt-1.5 text-sm text-ink-muted">
+                  {bantuan.status === 'selesai' ? 'Dibantu' : 'Ditawarkan'} oleh{' '}
+                  <span className="font-semibold text-ink">{bantuan.penolong?.nama ?? 'warga'}</span>
+                </p>
+              )}
+
               <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
                 <p className="text-xs text-ink-muted">
                   <span className="tabular">{waktuRelatif(bantuan.created_at)}</span>
-                  {bantuan.status === 'selesai' && (
-                    <> &middot; dibantu {bantuan.penolong?.nama ?? 'warga'}</>
-                  )}
                 </p>
-                <TombolHapus id={bantuan.id} judul={bantuan.title} />
+
+                {bantuan.status === 'menunggu' && (
+                  <TombolHapus id={bantuan.id} judul={bantuan.title} />
+                )}
+                {bantuan.status === 'diproses' && <TombolKonfirmasi id={bantuan.id} />}
               </div>
             </li>
           ))}

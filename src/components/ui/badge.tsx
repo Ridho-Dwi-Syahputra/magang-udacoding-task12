@@ -4,15 +4,18 @@ export function BadgeKategori({ kategori }: { kategori: Kategori }) {
   return <span className="text-xs font-semibold text-ink-muted">{LABEL_KATEGORI[kategori]}</span>
 }
 
-/* Beda status kelihatan dari isi vs garis, bukan dari warna lain. */
+const GAYA_STATUS: Record<Status, string> = {
+  menunggu: 'border border-line text-ink-muted',
+  diproses: 'bg-primary-soft text-primary',
+  selesai: 'bg-primary text-white',
+}
+
+/* Tiga status, tiga tingkat keterisian visual: garis polos (belum ada yang
+   nawarin) -> latar lembut (lagi diproses) -> latar penuh (kelar). Bedanya
+   kelihatan dari isi/garis, bukan dari ganti-ganti warna. */
 export function BadgeStatus({ status }: { status: Status }) {
-  const selesai = status === 'selesai'
   return (
-    <span
-      className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-        selesai ? 'bg-primary text-white' : 'border border-line text-ink-muted'
-      }`}
-    >
+    <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${GAYA_STATUS[status]}`}>
       {LABEL_STATUS[status]}
     </span>
   )

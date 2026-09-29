@@ -14,6 +14,7 @@ export type BarisDummy = {
   user_id: string
   helper_id: string | null
   helped_at: string | null
+  confirmed_at: string | null
   created_at: string
 }
 
@@ -44,6 +45,7 @@ function awal(): Isi {
       user_id: 'u-sari',
       helper_id: null,
       helped_at: null,
+      confirmed_at: null,
       created_at: jamLalu(2),
     },
     {
@@ -55,10 +57,13 @@ function awal(): Isi {
       location: 'Komplek Griya Insani Blok C, Kuranji',
       latitude: -0.901,
       longitude: 100.401,
-      status: 'menunggu',
+      // Contoh status "diproses": Rina udah nawarin, tinggal nunggu Budi
+      // (pemilik postingan) konfirmasi beneran udah dipinjemin apa belum.
+      status: 'diproses',
       user_id: 'u-budi',
-      helper_id: null,
-      helped_at: null,
+      helper_id: 'u-rina',
+      helped_at: jamLalu(1),
+      confirmed_at: null,
       created_at: jamLalu(9),
     },
     {
@@ -74,6 +79,7 @@ function awal(): Isi {
       user_id: 'u-rina',
       helper_id: null,
       helped_at: null,
+      confirmed_at: null,
       created_at: jamLalu(26),
     },
     {
@@ -89,6 +95,7 @@ function awal(): Isi {
       user_id: 'u-sari',
       helper_id: null,
       helped_at: null,
+      confirmed_at: null,
       created_at: jamLalu(50),
     },
     {
@@ -105,6 +112,7 @@ function awal(): Isi {
       user_id: 'u-budi',
       helper_id: null,
       helped_at: null,
+      confirmed_at: null,
       created_at: jamLalu(74),
     },
     {
@@ -119,7 +127,8 @@ function awal(): Isi {
       status: 'selesai',
       user_id: 'u-sari',
       helper_id: 'u-budi',
-      helped_at: jamLalu(96),
+      helped_at: jamLalu(97),
+      confirmed_at: jamLalu(96),
       created_at: jamLalu(120),
     },
     {
@@ -134,7 +143,8 @@ function awal(): Isi {
       status: 'selesai',
       user_id: 'u-rina',
       helper_id: 'u-sari',
-      helped_at: jamLalu(140),
+      helped_at: jamLalu(141),
+      confirmed_at: jamLalu(140),
       created_at: jamLalu(168),
     },
   ]
