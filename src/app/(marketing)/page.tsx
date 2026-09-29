@@ -1,3 +1,4 @@
+import Image from 'next/image'
 import Link from 'next/link'
 import { KartuBantuan } from '@/components/features/kartu-bantuan'
 import { gayaTombol } from '@/components/ui/button'
@@ -13,33 +14,48 @@ export default async function LandingPage() {
 
   return (
     <div className="space-y-12">
-      <section>
-        <h1 className="max-w-xl font-display text-4xl leading-[1.15] font-extrabold text-balance text-ink sm:text-5xl">
-          Saling Bantu, Saling Jaga
-        </h1>
+      <section className="grid items-center gap-10 lg:grid-cols-2">
+        <div>
+          <h1 className="font-display text-4xl leading-[1.15] font-extrabold text-balance text-ink sm:text-5xl">
+            Saling Bantu, Saling Jaga
+          </h1>
 
-        <p className="mt-4 max-w-xl text-base leading-relaxed text-ink-muted sm:text-lg">
-          Community Help Board itu papan pengumuman warga: siapa pun bisa menempel permintaan
-          bantuan, dari donor darah sampai pinjam kursi roda, dan tetangga yang sanggup tinggal
-          angkat tangan. Papannya bisa dilihat siapa saja -- akun cuma dibutuhkan buat
-          menempel permintaan atau menawarkan bantuan.
-        </p>
+          <p className="mt-4 text-base leading-relaxed text-ink-muted sm:text-lg">
+            Community Help Board itu papan pengumuman warga: siapa pun bisa menempel permintaan
+            bantuan, dari donor darah sampai pinjam kursi roda, dan tetangga yang sanggup tinggal
+            angkat tangan. Papannya bisa dilihat siapa saja -- akun cuma dibutuhkan buat menempel
+            permintaan atau menawarkan bantuan.
+          </p>
 
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Link href="/register" className={gayaTombol('primary')}>
-            Daftar dan Mulai Bantu
-          </Link>
-          <Link href="/bantuan" className={gayaTombol('secondary')}>
-            Lihat Semua Permintaan
-          </Link>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link href="/register" className={gayaTombol('primary')}>
+              Daftar dan Mulai Bantu
+            </Link>
+            <Link href="/bantuan" className={gayaTombol('secondary')}>
+              Lihat Semua Permintaan
+            </Link>
+          </div>
+
+          {total > 0 && (
+            <p className="mt-6 text-sm text-ink-muted">
+              <span className="tabular font-bold text-ink">{total}</span> permintaan tertempel,{' '}
+              <span className="tabular font-bold text-ink">{selesai}</span> sudah tertangani.
+            </p>
+          )}
         </div>
 
-        {total > 0 && (
-          <p className="mt-6 text-sm text-ink-muted">
-            <span className="tabular font-bold text-ink">{total}</span> permintaan tertempel,{' '}
-            <span className="tabular font-bold text-ink">{selesai}</span> sudah tertangani.
-          </p>
-        )}
+        {/* PNG-nya sudah dipotong transparan (bukan kotak putih), jadi nyatu
+            ke latar krem maupun gelap tanpa kotak/bingkai tambahan. */}
+        <div className="mx-auto w-full max-w-sm lg:max-w-none">
+          <Image
+            src="/image/landing-hero.png"
+            alt="Ilustrasi warga mengantre di meja bantuan"
+            width={620}
+            height={608}
+            priority
+            className="h-auto w-full"
+          />
+        </div>
       </section>
 
       <section>

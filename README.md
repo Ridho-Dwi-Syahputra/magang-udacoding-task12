@@ -6,7 +6,7 @@ Dibangun dengan Next.js App Router, Tailwind CSS, dan Supabase (Auth + Postgres)
 
 ## Fitur
 
-- Landing page publik yang menampilkan pratinjau permintaan terbaru asli -- bisa dilihat siapa saja tanpa akun. Masuk cuma diminta begitu mau menempel permintaan atau menawarkan bantuan.
+- Landing page publik dengan hero dua kolom (teks + ilustrasi) yang menampilkan pratinjau permintaan terbaru asli -- bisa dilihat siapa saja tanpa akun. Masuk cuma diminta begitu mau menempel permintaan atau menawarkan bantuan.
 - Daftar/masuk pakai email & kata sandi, plus opsi masuk dengan Google.
 - Papan bantuan yang bisa disaring per kategori; yang masih menunggu naik ke atas sendiri.
 - Form "Minta Bantuan" dengan validasi di server dan pesan error nempel di field-nya. Lokasinya bisa diketik manual atau dipilih lewat peta (klik/geser pin, cari alamat, atau pakai GPS).
