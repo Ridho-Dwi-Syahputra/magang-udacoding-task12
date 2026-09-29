@@ -6,8 +6,9 @@ import { gayaTombol } from '@/components/ui/button'
 import { PetaLokasi } from '@/components/features/peta-lokasi'
 import { TombolBantu } from '@/components/features/tombol-bantu'
 import { TombolHapus } from '@/components/features/tombol-hapus'
+import { ambilBantuan } from '@/lib/data/bantuan'
+import { sesiSekarang } from '@/lib/data/sesi'
 import { tanggalLengkap, waktuRelatif } from '@/lib/format'
-import { ambilBantuan, sesiSekarang } from '@/lib/repo'
 
 export async function generateMetadata({ params }: PageProps<'/bantuan/[id]'>): Promise<Metadata> {
   const { id } = await params
@@ -26,12 +27,12 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
   const bolehBantu = Boolean(user) && !milikSendiri && bantuan.status === 'menunggu'
 
   return (
-    <div className="max-w-2xl">
+    <div className="mx-auto max-w-2xl">
       <Link
         href="/bantuan"
         className="text-sm font-semibold text-ink-muted hover:text-primary focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
-        &larr; Kembali ke papan
+        Kembali ke papan
       </Link>
 
       <article className="mt-4 rounded-card border border-line bg-surface">

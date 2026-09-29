@@ -4,8 +4,9 @@ import { redirect } from 'next/navigation'
 import { BadgeKategori, BadgeStatus } from '@/components/ui/badge'
 import { TombolHapus } from '@/components/features/tombol-hapus'
 import { EmptyState } from '@/components/ui/states'
+import { bantuanMilik } from '@/lib/data/bantuan'
+import { sesiSekarang } from '@/lib/data/sesi'
 import { waktuRelatif } from '@/lib/format'
-import { bantuanMilik, sesiSekarang } from '@/lib/repo'
 
 export const metadata: Metadata = { title: 'Bantuan Saya' }
 
@@ -20,7 +21,7 @@ export default async function BantuanSayaPage() {
   const menunggu = daftar.filter((b) => b.status === 'menunggu').length
 
   return (
-    <div className="max-w-3xl">
+    <div className="mx-auto max-w-3xl">
       <h1 className="font-display text-2xl font-extrabold text-ink sm:text-3xl">Bantuan Saya</h1>
       <p className="mt-1 mb-6 text-sm text-ink-muted">
         {daftar.length === 0
