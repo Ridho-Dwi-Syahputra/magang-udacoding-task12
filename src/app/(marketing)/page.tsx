@@ -3,7 +3,7 @@ import { gayaTombol } from '@/components/ui/button'
 import { KATEGORI, LABEL_KATEGORI } from '@/lib/constants'
 import { ringkasan } from '@/lib/repo'
 
-export default async function BerandaPage() {
+export default async function LandingPage() {
   const { total, selesai } = await ringkasan()
 
   return (

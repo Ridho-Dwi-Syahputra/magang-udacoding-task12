@@ -1,8 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Manrope } from 'next/font/google'
 import { PenandaOffline } from '@/components/penanda-offline'
-import { Rangka } from '@/components/rangka'
-import { Sidebar } from '@/components/sidebar'
 import './globals.css'
 
 // Di-host sendiri waktu build: hilang satu request ke pihak ketiga, dan
@@ -19,14 +17,19 @@ export const metadata: Metadata = {
     'Papan pengumuman warga untuk saling bantu: donor darah, sembako, pinjam alat, sampai cari tenaga relawan.',
 }
 
+/*
+  Sengaja minimal: cuma html/body, font, dan penanda offline. Chrome
+  per-halaman (sidebar aplikasi, header landing, header auth) itu urusan
+  layout di masing-masing grup rute -- (app), (marketing), (auth) --
+  supaya login/register nggak ketarik nampilin sidebar aplikasi yang
+  isinya link ke halaman yang belum tentu bisa dia akses.
+*/
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html lang="id" className={`${inter.variable} ${manrope.variable} h-full antialiased`}>
       <body className="min-h-full">
-        <Rangka sidebar={<Sidebar />}>
-          <PenandaOffline />
-          <main className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-8 sm:py-10">{children}</main>
-        </Rangka>
+        <PenandaOffline />
+        {children}
       </body>
     </html>
   )

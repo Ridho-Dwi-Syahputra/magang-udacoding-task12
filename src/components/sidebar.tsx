@@ -18,7 +18,6 @@ export async function Sidebar() {
       </Link>
 
       <nav aria-label="Menu utama" className="space-y-1">
-        <MenuLink href="/">Beranda</MenuLink>
         <MenuLink href="/bantuan">Papan Bantuan</MenuLink>
         <MenuLink href="/minta-bantuan">Minta Bantuan</MenuLink>
         <MenuLink href="/bantuan-saya">Bantuan Saya</MenuLink>
