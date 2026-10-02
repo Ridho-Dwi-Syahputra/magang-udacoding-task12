@@ -26,7 +26,15 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
 
   const milikSendiri = user?.id === bantuan.user_id
   const akuPenolong = user?.id === bantuan.helper_id
-  const bolehBantu = Boolean(user) && !milikSendiri && bantuan.status === 'menunggu'
+  
+  const isLewatTenggat = (() => {
+    if (!bantuan.dibutuhkan_tanggal) return false
+    const tgl = new Date(bantuan.dibutuhkan_tanggal + 'T00:00:00')
+    const hariIni = new Date(new Date().setHours(0, 0, 0, 0))
+    return tgl.getTime() < hariIni.getTime()
+  })()
+
+  const bolehBantu = Boolean(user) && !milikSendiri && bantuan.status === 'menunggu' && !isLewatTenggat
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -62,6 +70,13 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
               <dt className="font-semibold text-ink">Lokasi</dt>
               <dd className="text-ink-muted">{bantuan.location}</dd>
             </div>
+            
+            {bantuan.dibutuhkan_tanggal && (
+              <div>
+                <dt className="font-semibold text-ink">Dibutuhkan sebelum</dt>
+                <dd className="text-ink-muted">{tanggalLengkap(bantuan.dibutuhkan_tanggal + 'T00:00:00')}</dd>
+              </div>
+            )}
 
             {/* Tampil begitu ada yang nawarin, bukan nunggu sampai konfirmasi
                 kelar -- pemilik postingan berhak tahu siapa yang lagi ngerjain. */}
@@ -118,6 +133,10 @@ export default async function DetailPage({ params }: PageProps<'/bantuan/[id]'>)
               </p>
               <TombolHapus id={bantuan.id} judul={bantuan.title} />
             </div>
+          ) : isLewatTenggat ? (
+            <p className="text-sm font-medium text-danger">
+              Bantuan ini telah melewati tenggat waktu yang dibutuhkan dan tidak dapat ditawarkan lagi.
+            </p>
           ) : bolehBantu ? (
             <>
               <p className="mb-3 text-sm text-ink">
